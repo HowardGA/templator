@@ -1,0 +1,216 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  AUTHENTICATED
+  ADMIN   
+}
+
+enum TemplateAccessType {
+  PUBLIC    
+  RESTRICTED
+}
+
+enum QuestionType {
+  SINGLE_LINE_STRING
+  MULTI_LINE_TEXT
+  NON_NEGATIVE_INTEGER
+  CHECKBOX
+}
+
+
+model User {
+  id                String       @id @default(uuid()) @map("id") 
+  email             String       @unique
+  passwordHash      String       @map("password_hash") @db.VarChar(255)
+  role              UserRole     @default(AUTHENTICATED)
+  isBlocked         Boolean      @default(false) @map("is_blocked") 
+  preferredLanguage String       @default("en") @map("preferred_language") @db.VarChar(10)
+  preferredTheme    String       @default("light") @map("preferred_theme") @db.VarChar(10)
+  version           Int          @default(1) 
+  createdAt         DateTime     @default(now()) @map("created_at") 
+  updatedAt         DateTime     @updatedAt @map("updated_at")
+  
+  templates         Template[]
+  forms             Form[]
+  comments          Comment[]
+  likes             Like[]
+  restrictedTemplates TemplateRestriction[] @relation("RestrictedUser")
+  adminManagedTemplates TemplateRestriction[] @relation("AdminManagedTemplate") 
+  @@map("users")
+}
+
+model Topic {
+  id        String     @id @default(uuid()) @map("id") 
+  name      String     @unique @db.VarChar(100)
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  templates Template[]
+  @@map("topics")
+}
+
+model Template {
+  id          String           @id @default(uuid()) @map("id") 
+  creator     User             @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  creatorId   String           @map("creator_id") 
+  title       String           @db.VarChar(100)
+  description String?          @db.Text
+  topic       Topic?           @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  topicId     String?          @map("topic_id") 
+  imageUrl    String?          @map("image_url") @db.VarChar(255)
+  accessType  TemplateAccessType @default(PUBLIC) @map("access_type")
+  version     Int              @default(1)
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  displayString1InResults  Boolean @default(false) @map("display_string1_in_results")
+  displayString2InResults  Boolean @default(false) @map("display_string2_in_results")
+  displayString3InResults  Boolean @default(false) @map("display_string3_in_results")
+  displayString4InResults  Boolean @default(false) @map("display_string4_in_results")
+  displayText1InResults    Boolean @default(false) @map("display_text1_in_results")
+  displayText2InResults    Boolean @default(false) @map("display_text2_in_results")
+  displayText3InResults    Boolean @default(false) @map("display_text3_in_results")
+  displayText4InResults    Boolean @default(false) @map("display_text4_in_results")
+  displayInt1InResults     Boolean @default(false) @map("display_int1_in_results")
+  displayInt2InResults     Boolean @default(false) @map("display_int2_in_results")
+  displayInt3InResults     Boolean @default(false) @map("display_int3_in_results")
+  displayInt4InResults     Boolean @default(false) @map("display_int4_in_results")
+  displayCheckbox1InResults Boolean @default(false) @map("display_checkbox1_in_results")
+  displayCheckbox2InResults Boolean @default(false) @map("display_checkbox2_in_results")
+  displayCheckbox3InResults Boolean @default(false) @map("display_checkbox3_in_results")
+  displayCheckbox4InResults Boolean @default(false) @map("display_checkbox4_in_results")
+
+  questions   TemplateQuestion[]   
+  forms       Form[]
+  comments    Comment[]
+  likes       Like[]
+  restrictedUsers TemplateRestriction[] @relation("TemplateRestriction")
+  tags        TemplateTag[]
+  @@map("templates")
+}
+
+model TemplateQuestion {
+  id            String       @id @default(uuid()) @map("id")
+  template      Template     @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  templateId    String       @map("template_id") 
+  
+  questionIndex Int          @map("question_index") 
+  questionType  QuestionType @map("question_type")
+  title         String       @db.VarChar(255)
+  description   String?      @db.Text 
+  @@unique([templateId, questionIndex])
+  @@map("template_questions")
+}
+
+model TemplateRestriction {
+  id          String   @id @default(uuid()) @map("id")
+  template    Template @relation("TemplateRestriction", fields: [templateId], references: [id], onDelete: Cascade)
+  templateId  String   @map("template_id")
+  user        User     @relation("RestrictedUser", fields: [userId], references: [id], onDelete: Cascade)
+  userId      String   @map("user_id")
+  assignedBy User? @relation("AdminManagedTemplate", fields: [assignedById], references: [id], onDelete: SetNull)
+  assignedById String? @map("assigned_by_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  @@unique([templateId, userId])
+  @@map("template_restricted_users")
+}
+
+model Tag {
+  id        String    @id @default(uuid()) @map("id") 
+  name      String    @unique @db.VarChar(100)
+  createdAt DateTime  @default(now()) @map("created_at")
+  templates TemplateTag[]
+  @@map("tags")
+}
+
+model TemplateTag {
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  templateId String   @map("template_id")
+  tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId      String   @map("tag_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  @@id([templateId, tagId]) 
+  @@map("template_tags")
+}
+
+model Form {
+  id             String   @id @default(uuid()) @map("id")
+  template       Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  templateId     String   @map("template_id")
+  filler         User?    @relation(fields: [fillerUserId], references: [id], onDelete: SetNull)
+  fillerUserId   String?  @map("filler_user_id")
+  version        Int      @default(1)
+  submittedAt    DateTime @default(now()) @map("submitted_at") 
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  answerString1  String?  @db.VarChar(500) @map("answer_string1")
+  answerString2  String?  @db.VarChar(500) @map("answer_string2")
+  answerString3  String?  @db.VarChar(500) @map("answer_string3")
+  answerString4  String?  @db.VarChar(500) @map("answer_string4")
+  answerText1    String?  @db.Text @map("answer_text1")
+  answerText2    String?  @db.Text @map("answer_text2")
+  answerText3    String?  @db.Text @map("answer_text3")
+  answerText4    String?  @db.Text @map("answer_text4")
+  answerInt1     Int?     @map("answer_int1")
+  answerInt2     Int?     @map("answer_int2")
+  answerInt3     Int?     @map("answer_int3")
+  answerInt4     Int?     @map("answer_int4")
+  answerCheckbox1 Boolean? @map("answer_checkbox1")
+  answerCheckbox2 Boolean? @map("answer_checkbox2")
+  answerCheckbox3 Boolean? @map("answer_checkbox3")
+  answerCheckbox4 Boolean? @map("answer_checkbox4")
+  @@map("forms")
+}
+
+model Comment {
+  id          String   @id @default(uuid()) @map("id") 
+  template    Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  templateId  String   @map("template_id")
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId    String   @map("author_id")
+  content     String   @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  version     Int      @default(1)
+  updatedAt   DateTime @updatedAt @map("updated_at") 
+  @@map("comments")
+}
+
+model Like {
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  templateId String   @map("template_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String   @map("user_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  @@id([templateId, userId])
+  @@map("likes")
+}
+
+model Language {
+  id   String @id 
+  name String @unique
+  translations UiTranslation[]
+  @@map("languages")
+}
+
+model UiTranslation {
+  id         String   @id @default(uuid())
+  key        String   
+  language   Language @relation(fields: [languageId], references: [id], onDelete: Cascade)
+  languageId String
+  value      String
+  @@unique([key, languageId])
+  @@map("ui_translations")
+}
