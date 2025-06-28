@@ -41,6 +41,8 @@ const fetchAndValidateUserForRefresh = async (res, email) => {
 };
 
 const issueAndSetNewTokens = (res, user) => {
+        console.log('User object before token generation:', user); // Debug line
+
     const tokenPayload = { id: user.id, email: user.email, role: user.role, name: user.firstName + ' ' + user.lastName };
     const newAccessToken = generateAccessToken(tokenPayload);
     const newRefreshToken = generateRefreshToken(tokenPayload);
