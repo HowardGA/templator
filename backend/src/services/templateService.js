@@ -2,7 +2,8 @@ import {
     createTemplate, 
     createTemplateQuestions, 
     createTemplateRestrictions,
-    createTemplateTags
+    createTemplateTags,
+    getNewestTemplates
 } from "../data/templateRepository.js";
 import { validateTemplateData } from "../utils/validation.js";
 
@@ -16,4 +17,8 @@ export const createFullTemplate = async (templateData) => {
     ]);
     
     return { newTemplate };
+};
+
+export const lastestTemplates = async () => {
+    return await getNewestTemplates(10)
 };

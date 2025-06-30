@@ -72,3 +72,55 @@ export const createTemplateTags = async (tagInputs, templateId) => {
         skipDuplicates: true
     });
 };
+
+export const getNewestTemplates = async ({ take, skip = 0 }) => {
+    const [templates, totalCount] = await Promise.all([
+        prisma.template.findMany({
+            where: { accessType: 'PUBLIC' },
+            orderBy: { createdAt: 'desc' },
+            take,
+            skip,
+           select: {
+        id: true,
+        title: true,
+        description: true,
+        imageUrl: true,
+        createdAt: true,
+        creator: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true
+          }
+        },
+        topic: {
+          select: {
+            id: true,
+            name: true
+          }
+        },
+        tags: {
+          select: {
+            tag: true
+          },
+          take: 3
+        },
+        _count: {
+          select: {
+            forms: true
+          }
+        }
+      }
+    }),
+    prisma.template.count({ where: { accessType: 'PUBLIC' } })
+  ]);
+
+  return {
+    data: templates,
+    pagination: {
+      total: totalCount,
+      hasMore: skip + take < totalCount,
+      nextPage: skip + take < totalCount ? Math.floor(skip / take) + 2 : null
+    }
+  };
+};
