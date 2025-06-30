@@ -35,3 +35,13 @@ export const validateLoginBody = (data) => {
     }
     return {email, password}
 }
+
+export const validateTemplateData = (data) => {
+    const {settings, questions, restrictions, tags} = data;
+    checkRequiredFields(data, ['settings', 'questions']);
+    return { settings, questions, restrictions: restrictions || [], tags: tags || [] };
+}
+
+export const isUUID = (str) => {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+  };

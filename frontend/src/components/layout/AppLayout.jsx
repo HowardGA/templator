@@ -1,9 +1,10 @@
 import { Layout, Spin } from 'antd';
 import AppHeader from './Header';
 import { useAuth } from '../../contexts/AuthContext'; 
+import { Outlet } from 'react-router-dom';
 
 const { Content, Footer } = Layout;
-const AppLayout = ({ children }) => {
+const AppLayout = () => {
     const { isLoading } = useAuth(); 
 
     if (isLoading) {
@@ -24,7 +25,7 @@ const AppLayout = ({ children }) => {
                         minHeight: 360,
                     }}
                 >
-                    {children}
+                    <Outlet />
                 </div>
             </Content>
 

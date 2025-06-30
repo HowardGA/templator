@@ -3,6 +3,7 @@ import LoginPage from './features/Auth/pages/LoginPage';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import HomePage from './features/Home/pages/HomePage';
+import TemplateCreatorPage from './features/Template-Creator/pages/TemplateCreatorPage';
 import { Layout, Spin } from 'antd'; 
 import { QueryProvider } from './lib/queryClient';
 import AppLayout from './components/layout/AppLayout';
@@ -23,8 +24,9 @@ const AppContent = () => {
                 <Routes>
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/login" element={<LoginPage />} />
-                     <Route path="/*" element={<AppLayout />}>
+                     <Route path="/" element={<AppLayout />}>
                          <Route index element={<HomePage />}/>
+                         <Route path="template-creator" element={<TemplateCreatorPage />} />
                     </Route>
                 </Routes>
         </Router>

@@ -1,15 +1,15 @@
 import prisma from "../prismaClient.js";
 
-export const findUserByEmail = async (email) => { 
+export const findUserByEmail = async (email) => {
     return prisma.user.findUnique({
         where: { email },
     });
 };
 
-export const createUser = async (userData) => { 
+export const createUser = async (userData) => {
     return prisma.user.create({
         data: userData,
-        select: { 
+        select: {
             id: true,
             firstName: true,
             lastName: true,
@@ -21,6 +21,20 @@ export const createUser = async (userData) => {
             version: true,
             createdAt: true,
             updatedAt: true,
+        }
+    });
+};
+
+export const fetchUsersEmailAndName = async () => {
+    return await prisma.user.findMany({
+        select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true
+        },
+        orderBy: {
+            createdAt: 'desc'
         }
     });
 };
