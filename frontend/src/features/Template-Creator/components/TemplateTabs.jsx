@@ -8,6 +8,7 @@ import { useState } from 'react';
 import {useAuth} from '../../../contexts/AuthContext';
 import { useCreateTemplate } from "../hooks/settingsHooks";
 import { useAntdApi } from "../../../contexts/MessageContext";
+import { validateTemplateData } from "../utils/templateValidation";
 
 const { TabPane } = Tabs;
 
@@ -60,39 +61,31 @@ const TemplateTabs = ({templateId, mode}) => {
         }));
     };
     const handleImageSelection = (image) => {
-        console.log(image)
         setImage(image)
     };
 
 const handleCreateTemplate = async () => {
   try {
-    if (!formData.settings.title?.trim()) {
-      messageApi.error('Template title is required');
+     const validation = validateTemplateData({ formData, user });
+
+    if (!validation.valid) {
+      messageApi.error(validation.message);
       return;
     }
 
-    if(!user){
-        messageApi.warning('No user loaded');
-        return;
-    }
-
-    if(!image) {
-        messageApi.warning('No image URL');
-        return;
-    }
     const payload = {
       ...formData,
       settings: {
         ...formData.settings,
         creatorId: user.id,
         title: formData.settings.title.trim(),
-        imageUrl: image.image
+        imageUrl: (image) ? image.image : ''
       },
       tags: formData.tags.map(tag => 
         typeof tag === 'string' ? tag.trim() : tag
       )
     };
-    await createTemplate(payload);
+    createTemplate(payload);
   } catch (error) {
     console.error('Template creation failed:', error);
   }
@@ -125,7 +118,7 @@ if (isLoading) {
                 </TabPane>
 
                 <TabPane tab="Questions" key="questions" icon={<BsFillQuestionSquareFill/>}>
-                    <QuestionMaker onQuestionsChange={handleQuestionsChange}/>
+                    <QuestionMaker questions={formData.questions}  onQuestionsChange={handleQuestionsChange}/>
                 </TabPane>
 
                 {mode === 'creating' &&

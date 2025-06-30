@@ -10,3 +10,8 @@ html, body, #root {
   display: flex;
   flex-direction: column;
 }
+
+label {
+  margin-bottom: 0.6rem;
+  display: block;
+}

@@ -1,79 +1,103 @@
-import { Form, Button } from "antd";
+import { Button } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import QuestionItem from "./QuestionItem";
-import { debounce } from "lodash";
-import { useEffect, useMemo } from "react";
+import { useEffect, useState } from "react";
+import { DndContext, closestCenter } from "@dnd-kit/core";
+import {
+    SortableContext,
+    verticalListSortingStrategy,
+    arrayMove,
+} from "@dnd-kit/sortable";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 
 const MAX_QUESTIONS = 16;
 
-const QuestionMaker = ({ onQuestionsChange }) => {
-    const [form] = Form.useForm();
-    const questions = Form.useWatch("items", form);
-    const questionCount = questions ? questions.length : 0;
-
-    const debouncedChangeHandler = useMemo(
-        () =>
-            debounce((items) => {
-                if (!items) return;
-                const validItems = items.filter(item => item !== null && item !== undefined);
-
-                const formattedQuestions = validItems.map((item, index) => ({
-                    questionIndex: index + 1,
-                    questionType: item.questionType,
-                    title: item.title,
-                    description: item.description,
-                    isRequired: item.isRequired || false,
-                    options: item.options || []
-                }));
-
-                onQuestionsChange?.(formattedQuestions);
-            }, 500),
-        [onQuestionsChange]
-    );
+const QuestionMaker = ({ questions = [], onQuestionsChange }) => {
+    const [items, setItems] = useState(questions || []);
 
     useEffect(() => {
-        debouncedChangeHandler(questions);
-        return () => debouncedChangeHandler.cancel();
-    }, [questions, debouncedChangeHandler]);
+        if (questions?.length && items.length === 0) {
+            setItems(questions);
+        }
+    }, []);
+
+    const handleRemove = (index) => {
+        const updatedItems = items.filter((_, i) => i !== index);
+        setItems(updatedItems);
+        onQuestionsChange?.(updatedItems);
+    };
+
+    const handleAdd = () => {
+        if (items.length >= MAX_QUESTIONS) return;
+        const newItem = {
+            key: `item-${Date.now()}`,
+            title: "",
+            description: "",
+            questionType: "",
+            isRequired: false,
+            options: [],
+        };
+        const updatedItems = [...items, newItem];
+        setItems(updatedItems);
+        onQuestionsChange?.(updatedItems);
+    };
+
+    const handleDragEnd = ({ active, over }) => {
+        if (!over || active.id === over.id) return;
+        const oldIndex = items.findIndex((item) => item?.key === active.id);
+        const newIndex = items.findIndex((item) => item?.key === over.id);
+        if (oldIndex !== -1 && newIndex !== -1) {
+            const newItems = arrayMove(items, oldIndex, newIndex);
+            setItems(newItems);
+            onQuestionsChange?.(newItems);
+        }
+    };
+
+    const questionCount = questions.length;
 
     return (
-        <Form
-            form={form}
-            name="questions_form_builder"
-            layout="vertical"
-            style={{ width: "80%", margin: "0 auto" }}
-            initialValues={{ items: [{}] }}
+        <DndContext
+            collisionDetection={closestCenter}
+            modifiers={[restrictToVerticalAxis]}
+            onDragEnd={handleDragEnd}
         >
-            <Form.List name="items">
-                {(fields, { add, remove }) => (
-                    <div style={{ display: "flex", rowGap: 24, flexDirection: "column" }}>
-                        {fields.map((field, index) => (
-                            <QuestionItem
-                                key={field.key}
-                                field={field}
-                                remove={remove}
-                                formInstance={form}
-                                questionIndex={index}
-                                isRemovable={questionCount > 1}
-                            />
-                        ))}
+            <SortableContext
+                items={items.map((item) => item.key)}
+                strategy={verticalListSortingStrategy}
+            >
+                <div style={{ display: "flex", rowGap: 24, flexDirection: "column" }}>
+                    {items.map((item, index) => (
+                        <QuestionItem
+                            id={item.key}
+                            key={item.key}
+                            item={item}
+                            index={index}
+                            remove={() => handleRemove(index)}
+                            isRemovable={items.length > 1}
+                            onChange={(updatedFields) => {
+                                const newItems = [...items];
+                                newItems[index] = { ...newItems[index], ...updatedFields };
+                                setItems(newItems);
+                                onQuestionsChange?.(newItems);
+                            }}
+                        />
+                    ))}
 
-                        <Button
-                            type="primary"
-                            onClick={() => add()}
-                            block
-                            disabled={questionCount >= MAX_QUESTIONS}
-                            icon={<PlusOutlined />}
-                            style={{ marginTop: 16 }}
-                        >
-                            {questionCount >= MAX_QUESTIONS
-                                ? `Maximum ${MAX_QUESTIONS} Questions Reached`
-                                : "Add Question"}
-                        </Button>
-                    </div>
-                )}
-            </Form.List>
-        </Form>
+                    <Button
+                        type="primary"
+                        onClick={handleAdd}
+                        block
+                        disabled={questionCount >= MAX_QUESTIONS}
+                        icon={<PlusOutlined />}
+                        style={{ marginTop: 16 }}
+                    >
+                        {questionCount >= MAX_QUESTIONS
+                            ? `Maximum ${MAX_QUESTIONS} Questions Reached`
+                            : "Add Question"}
+                    </Button>
+                </div>
+            </SortableContext>
+        </DndContext>
     );
 };
 

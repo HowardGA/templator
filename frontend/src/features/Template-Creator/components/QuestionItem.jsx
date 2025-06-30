@@ -1,5 +1,7 @@
-import { Card, Row, Col, Select, Input, Form, Button, Space, Checkbox, Tooltip } from "antd";
-import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
+import { Card, Row, Col, Select, Input, Button, Space, Checkbox, Tooltip } from "antd";
+import { CloseOutlined, PlusOutlined, MenuOutlined } from '@ant-design/icons';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const { Option } = Select;
 
@@ -10,103 +12,121 @@ const QUESTION_TYPES = {
     CHECKBOX: "Checkbox"
 };
 
-const QuestionItem = ({ field, remove, formInstance, questionIndex, isRemovable }) => {
-    const currentQuestionType = Form.useWatch(['items', field.name, 'questionType'], formInstance);
+const QuestionItem = ({ id, item, index, remove, isRemovable, onChange }) => {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+    } = useSortable({ id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        touchAction: 'none',
+    };
+
 
     return (
-        <Card
-            size="small"
-            title={`Question ${questionIndex + 1}`} 
-            key={field.key} 
-            extra={
-                isRemovable ? ( 
-                    <Tooltip title="Remove Question">
-                        <Button
-                            type="text"
-                            danger
-                            icon={<CloseOutlined />}
-                            onClick={() => remove(field.name)}
+        <div ref={setNodeRef} style={style}>
+            <Card
+                size="small"
+                title={`Question ${index + 1}`}
+                extra={
+                    <Space>
+                        {isRemovable && (
+                            <Tooltip title="Remove Question">
+                                <Button type="text" danger icon={<CloseOutlined />} onClick={remove} />
+                            </Tooltip>
+                        )}
+                        <Tooltip title="Drag to reorder">
+                            <Button type="text" icon={<MenuOutlined />} {...attributes} {...listeners} />
+                        </Tooltip>
+                    </Space>
+                }
+            >
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <label>Title</label>
+                        <Input
+                            value={item.title}
+                            onChange={(e) => onChange({ title: e.target.value })}
+                            placeholder="Your question title"
+                            style={{ marginBottom: '0.8rem' }}
                         />
-                    </Tooltip>
-                ) : null
-            }
-        >
-            <Row gutter={16}>
-                <Col span={12}>
-                    <Form.Item
-                        name={[field.name, 'title']}
-                        label="Question Title"
-                        rules={[{ required: true, message: 'Please enter question title' }]}
-                    >
-                        <Input placeholder="Your question title" />
-                    </Form.Item>
-                </Col>
-                <Col span={12}>
-                    <Form.Item
-                        name={[field.name, 'questionType']}
-                        label="Answer Type"
-                        rules={[{ required: true, message: 'Please select an answer type' }]}
-                    >
+                    </Col>
+                    <Col span={12}>
+                        <label>Answer Type</label>
                         <Select
+                            value={item.questionType}
+                            onChange={(value) => onChange({ questionType: value })}
                             placeholder="Select an answer type"
                             allowClear
+                            style={{ width: "100%", marginBottom: '0.8rem' }}
                         >
-                            {Object.entries(QUESTION_TYPES).map(([key, value]) => (
-                                <Option key={key} value={key}>{value}</Option>
+                            {Object.entries(QUESTION_TYPES).map(([key, label]) => (
+                                <Option key={key} value={key}>{label}</Option>
                             ))}
                         </Select>
-                    </Form.Item>
-                </Col>
-            </Row>
+                    </Col>
+                </Row>
 
-            <Form.Item
-                name={[field.name, 'description']}
-                label="Question Description"
-                rules={[{ required: true, message: 'Please enter question description' }]}
-            >
-                <Input.TextArea rows={2} placeholder="e.g., Please enter your name as it appears on your ID" />
-            </Form.Item>
+                <label>Description</label>
+                <Input.TextArea
+                    rows={2}
+                    value={item.description}
+                    onChange={(e) => onChange({ description: e.target.value })}
+                    placeholder="e.g., Please enter your name as it appears on your ID"
+                    style={{ marginBottom: '0.8rem' }}
+                />
 
-            {(currentQuestionType === 'CHECKBOX') && (
-                <Form.Item label="Options for Checkbox">
-                    <Form.List name={[field.name, 'options']}>
-                        {(subFields, subOpt) => (
-                            <div style={{ display: 'flex', flexDirection: 'column', rowGap: 8 }}>
-                                {subFields.map(subField => (
-                                    <Space key={subField.key} align="baseline">
-                                        <Form.Item
-                                            noStyle
-                                            name={[subField.name, 'label']}
-                                            rules={[{ required: true, message: 'Option label is required' }]}
-                                        >
-                                            <Input placeholder="Option Label" style={{ width: 'calc(100% - 30px)' }} />
-                                        </Form.Item>
-                                        <Tooltip title="Remove Option">
-                                            <Button
-                                                type="text"
-                                                danger
-                                                icon={<CloseOutlined />}
-                                                onClick={() => subOpt.remove(subField.name)}
-                                            />
-                                        </Tooltip>
-                                    </Space>
-                                ))}
-                                <Button type="dashed" onClick={() => subOpt.add()} block icon={<PlusOutlined />}>
-                                    Add Option
-                                </Button>
-                            </div>
-                        )}
-                    </Form.List>
-                </Form.Item>
-            )}
-            
-            <Form.Item
-                name={[field.name, 'isRequired']}
-                valuePropName="checked"
-            >
-                <Checkbox>Is this question required?</Checkbox>
-            </Form.Item>
-        </Card>
+                {item.questionType === 'CHECKBOX' && (
+                    <>
+                        <label>Options</label>
+                        {(item.options || []).map((opt, idx) => (
+                            <Space key={idx} style={{ display: 'flex', marginBottom: 8 }}>
+                                <Input
+                                    value={opt.label}
+                                    onChange={(e) => {
+                                        const newOptions = [...item.options];
+                                        newOptions[idx].label = e.target.value;
+                                        onChange({ options: newOptions });
+                                    }}
+                                    placeholder="Option Label"
+                                />
+                                <Button
+                                    type="text"
+                                    danger
+                                    icon={<CloseOutlined />}
+                                    onClick={() => {
+                                        const newOptions = item.options.filter((_, i) => i !== idx);
+                                        onChange({ options: newOptions });
+                                    }}
+                                />
+                            </Space>
+                        ))}
+                        <Button
+                            type="dashed"
+                            onClick={() => onChange({
+                                options: [...(item.options || []), { label: '' }]
+                            })}
+                            icon={<PlusOutlined />}
+                            block
+                        >
+                            Add Option
+                        </Button>
+                    </>
+                )}
+
+                <Checkbox
+                    checked={item.isRequired}
+                    onChange={(e) => onChange({ isRequired: e.target.checked })}
+                >
+                    Is this question required?
+                </Checkbox>
+            </Card>
+        </div>
     );
 }
 
