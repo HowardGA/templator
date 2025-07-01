@@ -2,85 +2,85 @@ import prisma from '../prismaClient.js';
 import { isUUID } from '../utils/validation.js';
 
 export const createTemplateQuestions = async (questions, templateId) => {
-    if (!questions.length) return;
-    return await prisma.templateQuestion.createMany({
-        data: questions.map(q => ({
-            templateId,
-            questionIndex: q.questionIndex,
-            questionType: q.questionType,
-            title: q.title,
-            description: q.description
-        }))
-    });
+  if (!questions.length) return;
+  return await prisma.templateQuestion.createMany({
+    data: questions.map(q => ({
+      templateId,
+      questionIndex: q.questionIndex,
+      questionType: q.questionType,
+      title: q.title,
+      description: q.description
+    }))
+  });
 };
 
 export const createTemplateRestrictions = async (users, templateId, creatorId) => {
-    if (!users.length) return;
+  if (!users.length) return;
 
-    return await prisma.templateRestriction.createMany({
-        data: users.map(userId => ({
-            templateId,
-            userId,
-            assignedById: creatorId
-        }))
-    });
+  return await prisma.templateRestriction.createMany({
+    data: users.map(userId => ({
+      templateId,
+      userId,
+      assignedById: creatorId
+    }))
+  });
 };
 
 export const createTemplate = async (templateData) => {
-    return await prisma.template.create({
-        data: {
-            creatorId: templateData.creatorId,
-            title: templateData.title,
-            description: templateData.description,
-            topicId: templateData.topicId,
-            imageUrl: templateData.imageUrl,
-            accessType: templateData.accessType,
-            displayString1InResults: templateData.displayString1InResults,
-        }
-    });
+  return await prisma.template.create({
+    data: {
+      creatorId: templateData.creatorId,
+      title: templateData.title,
+      description: templateData.description,
+      topicId: templateData.topicId,
+      imageUrl: templateData.imageUrl,
+      accessType: templateData.accessType,
+      displayString1InResults: templateData.displayString1InResults,
+    }
+  });
 };
 
 export const createTemplateTags = async (tagInputs, templateId) => {
-    if (!tagInputs.length) return;
-    const tags = await Promise.all(
-        tagInputs.map(async (input) => {
-            if (typeof (isUUID(input))) {
-                return { id: input };
+  if (!tagInputs.length) return;
+  const tags = await Promise.all(
+    tagInputs.map(async (input) => {
+      if (typeof (isUUID(input))) {
+        return { id: input };
+      }
+      if (typeof input === 'string') {
+        const name = input.trim();
+        if (!name) throw new Error('Invalid tag name');
+        return await prisma.tag.upsert({
+          where: {
+            name: {
+              equals: name,
+              mode: 'insensitive'
             }
-            if (typeof input === 'string') {
-                const name = input.trim();
-                if (!name) throw new Error('Invalid tag name');
-                return await prisma.tag.upsert({
-                    where: {
-                        name: {
-                            equals: name,
-                            mode: 'insensitive'
-                        }
-                    },
-                    create: { name },
-                    update: {},
-                    select: { id: true }
-                });
-            }
-        })
-    );
-    return await prisma.templateTag.createMany({
-        data: tags.map(tag => ({
-            templateId,
-            tagId: tag.id
-        })),
-        skipDuplicates: true
-    });
+          },
+          create: { name },
+          update: {},
+          select: { id: true }
+        });
+      }
+    })
+  );
+  return await prisma.templateTag.createMany({
+    data: tags.map(tag => ({
+      templateId,
+      tagId: tag.id
+    })),
+    skipDuplicates: true
+  });
 };
 
 export const getNewestTemplates = async ({ take, skip = 0 }) => {
-    const [templates, totalCount] = await Promise.all([
-        prisma.template.findMany({
-            where: { accessType: 'PUBLIC' },
-            orderBy: { createdAt: 'desc' },
-            take,
-            skip,
-           select: {
+  const [templates, totalCount] = await Promise.all([
+    prisma.template.findMany({
+      where: { accessType: 'PUBLIC' },
+      orderBy: { createdAt: 'desc' },
+      take,
+      skip,
+      select: {
         id: true,
         title: true,
         description: true,
@@ -123,4 +123,177 @@ export const getNewestTemplates = async ({ take, skip = 0 }) => {
       nextPage: skip + take < totalCount ? Math.floor(skip / take) + 2 : null
     }
   };
+};
+
+export const getSingleTemplate = async (templateId, currentUserId) => {
+  return await prisma.template.findUnique({
+    where: {
+      id: templateId
+    },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      imageUrl: true,
+      createdAt: true,
+      updatedAt: true,
+      accessType: true,
+      creator: {
+        select: {
+          firstName: true,
+          lastName: true
+        }
+      },
+      topic: {
+        select: {
+          name: true
+        }
+      },
+      tags: {
+        select: {
+          tag: true
+        },
+      },
+      likes: {
+        where: currentUserId ? { userId: currentUserId } : undefined,
+        select: {
+          createdAt: true,
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true
+            }
+          }
+        }
+      },
+      comments: {
+        orderBy: {
+          createdAt: 'desc'
+        },
+        select: {
+          id: true,
+          content: true,
+          createdAt: true,
+          updatedAt: true,
+          author: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true
+            }
+          }
+        },
+        take: 5
+      },
+      questions: {
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          questionType: true,
+        },
+      },
+      _count: {
+        select: {
+          questions: true,
+          forms: true,
+          likes: true,
+          comments: true
+        }
+      }
+    }
+  });
+};
+
+export const giveLikeToTemplate = async (templateId, currentUserId) => {
+  return await prisma.like.create({
+    data: {
+      templateId,
+      userId: currentUserId
+    }
+  })
+};
+
+export const createCommentTemplate = async (templateId, currentUserId, comment) => {
+  return await prisma.comment.create({
+    data: {
+      templateId,
+      authorId: currentUserId,
+      content: comment
+    },
+    include: {
+      author: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true
+        }
+      }
+    }
+  })
+}
+
+export const getCommentsFromTemplate = async (templateId, page = 1, limit = 10) => {
+  const skip = (page - 1) * limit;
+
+  const [comments, total] = await Promise.all([
+    prisma.comment.findMany({
+      where: { templateId },
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        author: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true
+          }
+        }
+      }
+    }),
+    prisma.comment.count({ where: { templateId } })
+  ]);
+
+  return {
+    data: comments,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    }
+  };
+};
+
+export const getLikesFromTemplate = async (templateId) => {
+  return await prisma.like.findMany({
+    where: {
+      templateId
+    }
+  });
+}
+
+export const checkUserLike = async (templateId, userId) => {
+  const like = await prisma.like.findUnique({
+    where: {
+      templateId_userId: {
+        templateId,
+        userId
+      }
+    }
+  });
+  return !!like;
+};
+
+export const removeLikeFromTemplate = async (templateId, currentUserId) => {
+  return await prisma.like.delete({
+    where: {
+      templateId_userId: {
+        templateId,
+        userId: currentUserId
+      }
+    }
+  });
 };

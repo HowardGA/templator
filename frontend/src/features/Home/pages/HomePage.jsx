@@ -1,6 +1,8 @@
 import { useAuth } from "../../../contexts/AuthContext";
 import LastestTemplates from "../components/LastestTemplates";
+import TagCloud from "../components/TagCloud";
 import { Layout, Typography, Space } from "antd";
+
 const { Content } = Layout;
 const { Title } = Typography;
 
@@ -11,6 +13,16 @@ const HomePage = () => {
             maxWidth: '1400px',
             width: '100%'
         }}>
+            <Space
+                direction="vertical"
+                size="large"
+                style={{
+                    width:'100%',
+                    textAlign:'center'
+                }}
+            >
+                <TagCloud/>
+            </Space>
             <Space
                 direction="vertical"
                 size="large"

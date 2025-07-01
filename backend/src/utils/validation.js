@@ -45,3 +45,10 @@ export const validateTemplateData = (data) => {
 export const isUUID = (str) => {
     return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
   };
+
+export const validateComment = (comment) => {
+    if (!comment || comment.trim().length === 0) {
+        throw new ValidationError('Comment content cannot be empty.');
+    }
+    return comment;
+}

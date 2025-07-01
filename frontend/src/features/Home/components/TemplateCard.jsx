@@ -1,14 +1,15 @@
-// components/TemplateCard.tsx
 import { Card, Tag, Typography, Avatar } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
-
+import { useNavigate } from 'react-router-dom';
 const { Text, Title, Paragraph } = Typography;
 
 const TemplateCard = ({ template }) => {
+    const navigate = useNavigate();
     return (
         <Card
             hoverable
             style={{ width: '100%', height: '100%' }}
+            onClick={() => navigate(`/template-preview/${template.id}`)}
             cover={
                 template.imageUrl ? (
                     <img
