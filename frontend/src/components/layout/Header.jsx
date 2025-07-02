@@ -20,7 +20,7 @@ const getMenuItems = (isAuthenticated) => [
     },
     isAuthenticated && {
         key: 'create-template',
-        label: <Link to="/create-template">Create Template</Link>,
+        label: <Link to="/template-creator">Create Template</Link>,
         icon: <FaPlusSquare />
     },
     isAuthenticated && {

@@ -1,5 +1,4 @@
 import prisma from '../prismaClient.js';
-import { isUUID } from '../utils/validation.js';
 
 export const createTemplateQuestions = async (questions, templateId) => {
   if (!questions.length) return;
@@ -9,8 +8,36 @@ export const createTemplateQuestions = async (questions, templateId) => {
       questionIndex: q.questionIndex,
       questionType: q.questionType,
       title: q.title,
-      description: q.description
+      description: q.description,
+      required: q.required
     }))
+  });
+};
+
+export const createCheckboxQuestions = async (q, templateId) => {
+  return await prisma.templateQuestion.create({
+      data: {
+        templateId,
+        questionIndex: q.questionIndex,
+        questionType: q.questionType,
+        title: q.title,
+        description: q.description,
+        required: q.required,
+      },
+    });
+}
+
+export const createQuestionOptions = async (questionId, options) => {
+  const cleanedOptions = options
+    .map((opt, index) => ({
+      questionId,
+      optionText: opt.label?.trim(),
+    }))
+    .filter(opt => opt.optionText);
+  if (!cleanedOptions.length) return;
+  await prisma.questionOption.createMany({
+    data: cleanedOptions,
+    skipDuplicates: true,
   });
 };
 
@@ -44,24 +71,29 @@ export const createTemplateTags = async (tagInputs, templateId) => {
   if (!tagInputs.length) return;
   const tags = await Promise.all(
     tagInputs.map(async (input) => {
-      if (typeof (isUUID(input))) {
-        return { id: input };
-      }
-      if (typeof input === 'string') {
-        const name = input.trim();
-        if (!name) throw new Error('Invalid tag name');
+      const value = typeof input === 'string' ? input.trim() : input;
+      const existing = await prisma.tag.findUnique({
+        where: { id: value },
+        select: { id: true }
+      });
+
+      if (existing) return existing;
+
+      if (typeof value === 'string' && value.length > 0) {
         return await prisma.tag.upsert({
           where: {
-            name: {
-              equals: name,
-              mode: 'insensitive'
-            }
+            name: input.trim(), 
           },
-          create: { name },
+          create: {
+            name: input.trim(),
+          },
           update: {},
-          select: { id: true }
+          select: {
+            id: true,
+          },
         });
       }
+      throw new Error('Invalid tag input');
     })
   );
   return await prisma.templateTag.createMany({
@@ -192,6 +224,13 @@ export const getSingleTemplate = async (templateId, currentUserId) => {
           title: true,
           description: true,
           questionType: true,
+          required: true,
+          options: {
+            select: {
+              id: true,
+              optionText: true,
+            },
+          }
         },
       },
       _count: {

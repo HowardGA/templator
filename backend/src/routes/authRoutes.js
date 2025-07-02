@@ -34,6 +34,7 @@ router.post('/logout', async (req, res) => {
 });
 
 router.get('/me',authenticateToken, async (req, res) => {
+    console.log("/me - req.user:", req.user);
     sendSuccessResponse(res, 200, 'User data fetched successfully', req.user);
 })
 

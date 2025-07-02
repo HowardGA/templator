@@ -6,7 +6,7 @@ import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
 
 const tokenPayloadObj = (userId, email, role) => {
     return {
-        userId,
+        id: userId,
         email,
         role,
     };
@@ -38,6 +38,7 @@ export const loginUser = async (credentials) => {
         throw new Error('Invalid email or password.');
     }
     const tokenPayload = tokenPayloadObj(user.id, user.email, user.role);
+    console.log('🔐 token payload on login:', tokenPayload);
     const accessToken = generateAccessToken(tokenPayload);
     const refreshToken = generateRefreshToken(tokenPayload);
     const { passwordHash, ...userWithoutHash } = user;

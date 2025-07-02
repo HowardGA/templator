@@ -20,3 +20,22 @@ export function validateTemplateData({ formData, user }) {
   }
   return { valid: true };
 }
+
+export const validateQuestions = (questions) => {
+  for (const q of questions) {
+    if (!q.title?.trim()) return { valid: false, message: "Titles are required." };
+    if (!q.questionType) return { valid: false, message: "All questions must have a type." };
+
+    if (q.questionType === "CHECKBOX") {
+      if (!q.options || q.options.length === 0) {
+        return { valid: false, message: "Checkbox questions must have at least one option." };
+      }
+      const hasEmptyLabel = q.options.some(opt => !opt.label?.trim());
+      if (hasEmptyLabel) {
+        return { valid: false, message: "All checkbox options must have labels." };
+      }
+    }
+  }
+
+  return { valid: true };
+};

@@ -9,7 +9,7 @@ import {useAuth} from '../../../contexts/AuthContext';
 import { useCreateTemplate } from "../hooks/settingsHooks";
 import { useAntdApi } from "../../../contexts/MessageContext";
 import { validateTemplateData } from "../utils/templateValidation";
-
+import { validateQuestions } from "../utils/templateValidation";
 const { TabPane } = Tabs;
 
 const TemplateTabs = ({templateId, mode}) => {
@@ -41,9 +41,13 @@ const TemplateTabs = ({templateId, mode}) => {
     };
 
     const handleQuestionsChange = (questions) => {
+        const updatedQuestions = questions.map((q, index) => ({
+            ...q,
+            questionIndex: index,
+        }));
         setFormData(prev => ({
             ...prev,
-            questions
+            questions: updatedQuestions
         }));
     };
 
@@ -67,9 +71,10 @@ const TemplateTabs = ({templateId, mode}) => {
 const handleCreateTemplate = async () => {
   try {
      const validation = validateTemplateData({ formData, user });
+     const { valid, message } = validateQuestions(formData.questions);
 
-    if (!validation.valid) {
-      messageApi.error(validation.message);
+    if (!validation.valid || !valid) {
+      messageApi.error(validation.message || message);
       return;
     }
 
@@ -86,6 +91,7 @@ const handleCreateTemplate = async () => {
       )
     };
     createTemplate(payload);
+    console.log(payload)
   } catch (error) {
     console.error('Template creation failed:', error);
   }

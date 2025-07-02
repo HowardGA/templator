@@ -120,8 +120,8 @@ const QuestionItem = ({ id, item, index, remove, isRemovable, onChange }) => {
                 )}
 
                 <Checkbox
-                    checked={item.isRequired}
-                    onChange={(e) => onChange({ isRequired: e.target.checked })}
+                    checked={item.required}
+                    onChange={(e) => onChange({ required: e.target.checked })}
                 >
                     Is this question required?
                 </Checkbox>

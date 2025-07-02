@@ -34,7 +34,7 @@ const QuestionMaker = ({ questions = [], onQuestionsChange }) => {
             title: "",
             description: "",
             questionType: "",
-            isRequired: false,
+            required: false,
             options: [],
         };
         const updatedItems = [...items, newItem];
