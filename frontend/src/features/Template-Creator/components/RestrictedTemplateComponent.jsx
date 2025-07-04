@@ -3,12 +3,16 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { debounce } from 'lodash';
 import { useGetUserEmailAndName } from '../../Profile/hooks/userHooks';
 
-const RestrictedTemplateComponent = ({ onChange }) => {
+const RestrictedTemplateComponent = ({ onChange, restrictions = [] }) => {
     const [options, setOptions] = useState([]);
     const [selectedUsers, setSelectedUsers] = useState([]); 
     const {data: users, isLoading} = useGetUserEmailAndName();
     const [searchLoading, setSearchLoading] = useState(false);
     const allOptions = useRef([]); 
+
+    useEffect(() => {
+        setSelectedUsers(restrictions);
+    }, [restrictions]);
 
     useEffect(() => {
         if (users?.data) {

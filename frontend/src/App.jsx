@@ -10,6 +10,8 @@ import AppLayout from './components/layout/AppLayout';
 import TemplatePreview from './features/Home/components/PreviewTemplate';
 import FormTemplate from './features/FillForm/pages/FormTemplate';
 import ProtectedRoute from './components/common/ProtectedRoute';
+import Shared from './features/Profile/pages/Shared';
+import ProfileTabs from './features/Profile/pages/ProfileTabs';
 
 const AppContent = () => {
     const { isLoading, isAuthenticated } = useAuth(); 
@@ -38,6 +40,16 @@ const AppContent = () => {
                         <Route path="teamplete-fill/:id" element={
                             <ProtectedRoute isAuthenticated={isAuthenticated}>
                                 <FormTemplate />
+                            </ProtectedRoute>}
+                        />
+                        <Route path="shared-me" element={
+                            <ProtectedRoute isAuthenticated={isAuthenticated}>
+                                <Shared />
+                            </ProtectedRoute>}
+                        />
+                        <Route path="profile" element={
+                            <ProtectedRoute isAuthenticated={isAuthenticated}>
+                                <ProfileTabs />
                             </ProtectedRoute>}
                         />
                     </Route>

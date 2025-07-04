@@ -17,6 +17,8 @@ const FormTemplate = () => {
   const { id } = useParams();
   const location = useLocation();
   const template = location.state?.templateData;
+  const mode = location.state?.mode || 'create';
+  const initialAnswers = location.state?.answers || [];
 
   return (
     <div
@@ -71,7 +73,12 @@ const FormTemplate = () => {
             </Text>
           </Space>
       </Card>
-      <Questions questions={template.data.questions} templateId={id}/>
+      <Questions 
+          questions={template.data.questions} 
+          templateId={id}
+          mode={mode}
+          initialAnswers={initialAnswers}
+      />
     </div>
   );
 };

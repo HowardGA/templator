@@ -19,6 +19,7 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { useTemplateDetails } from "../hooks/mainPageHooks";
 import { useParams, useNavigate } from "react-router-dom";
 import { QUESTION_TYPES } from "../../Template-Creator/components/QuestionItem";
+import { FiSettings } from "react-icons/fi";
 
 const { Title, Text, Paragraph } = Typography;
 const { Panel } = Collapse;
@@ -115,6 +116,10 @@ const TemplatePreview = () => {
           </Space>
           {user &&
           <Space>
+            {(template.data.creator?.id === user.id || user.role === 'ADMIN') &&
+              <Button variant="solid" color="orange" icon={<FiSettings />} onClick={() => navigate('/template-creator', {state: {templateData: template.data}})}>
+              Edit Template
+            </Button>}
             <Button type="primary" icon={<FormOutlined />} onClick={() => navigate(`/teamplete-fill/${id}`, { state: { templateData: template}})}>
               Take This Form
             </Button>

@@ -47,3 +47,106 @@ export const createFilledForm = async (templateId, fillerUserId, answers) => {
     return newForm;
   });
 };
+
+export const myForms = async (userId, { take = 10, skip = 0 } = {}) => {
+  const [forms, totalCount] = await Promise.all([
+    prisma.form.findMany({
+      where: {
+        fillerUserId: userId,
+      },
+      orderBy: {
+        submittedAt: 'desc',
+      },
+      take,
+      skip,
+      select: {
+        id: true,
+        submittedAt: true,
+        updatedAt: true,
+        version: true,
+        template: {
+          select: {
+            id: true,
+            title: true,
+            topic: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            answers: true,
+            answerOptions: true,
+          },
+        },
+      },
+    }),
+    prisma.form.count({
+      where: {
+        fillerUserId: userId,
+      },
+    }),
+  ]);
+  return {
+    data: forms,
+    pagination: {
+      total: totalCount,
+      hasMore: skip + take < totalCount,
+      nextPage: skip + take < totalCount ? Math.floor(skip / take) + 2 : null,
+    },
+  };
+};
+
+export const singleForm = (formId) => {
+  return prisma.form.findFirst({
+    where: {
+      id: formId,
+    },
+    include: {
+      filler: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+      },
+      template: {
+        select: {
+          id: true,
+          title: true,
+          description: true,
+        },
+      },
+      answers: {
+        include: {
+          question: {
+            select: {
+              id: true,
+              title: true,
+              questionType: true,
+            },
+          },
+        },
+      },
+      answerOptions: {
+        include: {
+          question: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+          selectedOption: {
+            select: {
+              id: true,
+              optionText: true,
+            },
+          },
+        },
+      },
+    },
+  });
+};

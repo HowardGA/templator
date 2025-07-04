@@ -1,4 +1,5 @@
 import {useMutation, useQuery} from '@tanstack/react-query';
+import { queryClient } from '../../../lib/queryClient.jsx';
 import { registerUser, loginUser, fetchCurrentUser, logoutUser } from '../services/authServices';
 import { useAntdApi } from '../../../contexts/MessageContext.jsx';
 
@@ -49,6 +50,7 @@ export const useLogout = ({ setUser, setIsAuthenticated }) => {
         onSuccess: () => {
             setUser(null);
             setIsAuthenticated(false);
+            queryClient.removeQueries('currentUser');
             messageApi.success('Logged out successfully!'); 
         },
         onError: (error) => {

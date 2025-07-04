@@ -6,30 +6,54 @@ import MainFormDetails from "./MainFormDetails";
 import QuestionMaker from "./QuestionMaker";
 import { useState } from 'react';
 import {useAuth} from '../../../contexts/AuthContext';
-import { useCreateTemplate } from "../hooks/settingsHooks";
+import { useCreateTemplate,useUpdatePayload } from "../hooks/settingsHooks";
 import { useAntdApi } from "../../../contexts/MessageContext";
-import { validateTemplateData } from "../utils/templateValidation";
-import { validateQuestions } from "../utils/templateValidation";
+import { validateData, TemplatePayload } from "../utils/templateValidation";
 const { TabPane } = Tabs;
 
-const TemplateTabs = ({templateId, mode}) => {
+const TemplateTabs = ({templateData, mode}) => {
+    console.log(templateData)
     const {user, isLoading } = useAuth();
     const { message: messageApi } = useAntdApi();
     const [image, setImage] = useState();
-    const [formData, setFormData] = useState({
-        settings: {
-            title: '',
-            description: '',
-            topicId: null,
-            imageUrl: null,
-            accessType: 'PUBLIC'
-        },
-        questions: [],
-        restrictions: [],
-        tags: []
+    const {mutate: updateTemplate } = useUpdatePayload();
+    const [formData, setFormData] = useState(() => {
+        if (!templateData) {
+            return {
+                settings: {
+                    title: '',
+                    description: '',
+                    topicId: null,
+                    imageUrl: null,
+                    accessType: 'PUBLIC'
+                },
+                questions: [],
+                restrictions: [],
+                tags: []
+            }
+        }
+        return {
+            settings: {
+                title: templateData.title,
+                description: templateData.description,
+                topicId: templateData.topic?.id || null,
+                imageUrl: templateData.imageUrl,
+                accessType: templateData.accessType
+            },
+            questions: templateData.questions.map((q, index) => ({
+                ...q,
+                key: q.id,
+                questionIndex: index
+            })),
+            tags: templateData.tags.map(tag => ({
+                id: tag.tag.id,
+                name: tag.tag.name
+            })),
+            restrictions: [] 
+        };
     });
+    console.log(mode)
     const {mutate:createTemplate, isPending: templateIsPending} = useCreateTemplate();
-
     const handleSettingsChange = (newSettings) => {
         setFormData(prev => ({
             ...prev,
@@ -68,66 +92,78 @@ const TemplateTabs = ({templateId, mode}) => {
         setImage(image)
     };
 
-const handleCreateTemplate = async () => {
-  try {
-     const validation = validateTemplateData({ formData, user });
-     const { valid, message } = validateQuestions(formData.questions);
-
-    if (!validation.valid || !valid) {
-      messageApi.error(validation.message || message);
-      return;
-    }
-
-    const payload = {
-      ...formData,
-      settings: {
-        ...formData.settings,
-        creatorId: user.id,
-        title: formData.settings.title.trim(),
-        imageUrl: (image) ? image.image : ''
-      },
-      tags: formData.tags.map(tag => 
-        typeof tag === 'string' ? tag.trim() : tag
-      )
+    const handleUpdateTemplate = async () => {
+        try {
+            const error = await validateData(formData, user.id);
+            if (error) {
+                messageApi.error(error);
+            return;
+            }
+            const payload = TemplatePayload(formData, image, user.id);
+            console.log(payload)
+            updateTemplate({templateData: payload, templateId: templateData.id});
+        } catch (error) {
+            console.error('Template update failed:', error);
+            messageApi.error("Failed to update template.");
+        }
     };
-    createTemplate(payload);
-    console.log(payload)
-  } catch (error) {
-    console.error('Template creation failed:', error);
-  }
-};
-if (isLoading) {
-    return <Spin/>;
-  }
+
+    const handleCreateTemplate = async () => {
+        try {
+            const error = await validateData(formData, user.id);
+            if (error) {
+                messageApi.error(error);
+            return;
+            }
+            const payload = TemplatePayload(formData, image, user.id);
+            createTemplate(payload);
+        } catch (error) {
+            console.error('Template creation failed:', error);
+            messageApi.error("Failed to create template.");
+        }
+    };
+
+    if (isLoading) {
+        return <Spin/>;
+    }
     return (
         <>
             <Button 
                 type="primary" 
-                onClick={handleCreateTemplate}
-            >
-                Create Template
+                onClick={mode === 'editing' ? handleUpdateTemplate : handleCreateTemplate}
+                >
+                {mode === 'editing' ? 'Update Template' : 'Create Template'}
             </Button>
             <Tabs
                 defaultActiveKey="settings"
                 style={{width:'100%'}}
                 centered
             >
-                <TabPane tab="Settings" key="settings"  icon={<IoIosSettings/>}>
-                    <Flex gap="middle" align='center' justify='center' vertical>
-                        <MainFormDetails 
-                            onSettingsChange={handleSettingsChange}
-                            onRestrictionsChange={handleRestrictionsChange}
-                            onTagsChange={handleTagsChange}
-                            onImageSelection={handleImageSelection}
-                        />
-                    </Flex>
-                </TabPane>
+                 {(mode === 'creating' || mode === 'editing') &&
+                    <>
+                        <TabPane tab="Settings" key="settings"  icon={<IoIosSettings/>}>
+                            <Flex gap="middle" align='center' justify='center' vertical>
+                                <MainFormDetails 
+                                    onSettingsChange={handleSettingsChange}
+                                    onRestrictionsChange={handleRestrictionsChange}
+                                    onTagsChange={handleTagsChange}
+                                    onImageSelection={handleImageSelection}
+                                    initialSettings={formData.settings}
+                                    initialTags={formData.tags}
+                                    initialRestrictions={formData.restrictions}
+                                    mode={mode}
+                                />
+                            </Flex>
+                        </TabPane>
 
-                <TabPane tab="Questions" key="questions" icon={<BsFillQuestionSquareFill/>}>
-                    <QuestionMaker questions={formData.questions}  onQuestionsChange={handleQuestionsChange}/>
-                </TabPane>
-
-                {mode === 'creating' &&
+                        <TabPane tab="Questions" key="questions" icon={<BsFillQuestionSquareFill/>}>
+                            <Flex gap="middle" align='center' justify='center' vertical>
+                                <QuestionMaker questions={formData.questions}  onQuestionsChange={handleQuestionsChange}/>
+                            </Flex>
+                        </TabPane>
+                    </>
+                }
+                {mode === 'editing' &&
                     <>
                         <TabPane tab="Submissions" key="submissions" icon={<MdMenuBook/>}>
                         </TabPane>

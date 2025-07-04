@@ -14,8 +14,8 @@ const getMenuItems = (isAuthenticated) => [
         icon: <FaHome />
     },
     isAuthenticated && {
-        key: 'my-templates',
-        label: <Link to="/my-templates">My Templates</Link>,
+        key: 'shared-me',
+        label: <Link to="/shared-me">Shared With Me</Link>,
         icon: <FaWpforms />
     },
     isAuthenticated && {

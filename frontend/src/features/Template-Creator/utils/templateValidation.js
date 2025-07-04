@@ -1,4 +1,4 @@
-export function validateTemplateData({ formData, user }) {
+export function validateTemplateData( formData, user ) {
   const { title, description, topicId, accessType } = formData.settings || {};
   if (!user) {
     return { valid: false, message: 'No user loaded' };
@@ -39,3 +39,28 @@ export const validateQuestions = (questions) => {
 
   return { valid: true };
 };
+
+export const validateData = async (formData, user) => {
+  console.log(formData)
+  const validation = validateTemplateData( formData, user );
+  const { valid, message } = validateQuestions(formData.questions);
+  if (!validation.valid || !valid) {
+    return message;
+  }
+}
+
+export const TemplatePayload = (formData, image,userId) => {
+  const payload = {
+    ...formData,
+      settings: {
+          ...formData.settings,
+          title: formData.settings.title.trim(),
+          imageUrl: (image) ? image.image : '',
+          creatorId:userId
+      },
+      tags: formData.tags.map(tag =>
+          typeof tag === 'string' ? tag.trim() : tag
+      )
+  }
+  return payload;
+}

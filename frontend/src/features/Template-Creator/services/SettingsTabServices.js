@@ -14,8 +14,11 @@ export const createTag = () => {
 }
 
 export const createTemplate = (templateData) => {
-    console.log(templateData)
     return apiClient.post('/template/', templateData);
+}
+
+export const updateTemplate = (templateData, templateId) => {
+    return apiClient.put(`/template/${templateId}`, templateData);
 }
 
 export const uploadImageToImgBB = async (file) => {

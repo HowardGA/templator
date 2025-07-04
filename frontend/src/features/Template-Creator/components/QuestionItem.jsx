@@ -87,10 +87,10 @@ const QuestionItem = ({ id, item, index, remove, isRemovable, onChange }) => {
                         {(item.options || []).map((opt, idx) => (
                             <Space key={idx} style={{ display: 'flex', marginBottom: 8 }}>
                                 <Input
-                                    value={opt.label}
+                                    value={opt.optionText}
                                     onChange={(e) => {
                                         const newOptions = [...item.options];
-                                        newOptions[idx].label = e.target.value;
+                                        newOptions[idx].optionText = e.target.value;
                                         onChange({ options: newOptions });
                                     }}
                                     placeholder="Option Label"
@@ -109,7 +109,7 @@ const QuestionItem = ({ id, item, index, remove, isRemovable, onChange }) => {
                         <Button
                             type="dashed"
                             onClick={() => onChange({
-                                options: [...(item.options || []), { label: '' }]
+                                options: [...(item.options || []), { optionText: '' }]
                             })}
                             icon={<PlusOutlined />}
                             block

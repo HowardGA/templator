@@ -1,6 +1,6 @@
-import { 
-    createTemplate, 
-    createTemplateQuestions, 
+import {
+    createTemplate,
+    createTemplateQuestions,
     createTemplateRestrictions,
     createTemplateTags,
     getNewestTemplates,
@@ -9,20 +9,20 @@ import {
     createCommentTemplate,
     getLikesFromTemplate, getCommentsFromTemplate,
     checkUserLike, removeLikeFromTemplate, createCheckboxQuestions,
-    createQuestionOptions
+    createQuestionOptions, updateTemplate, clearRelations
 } from "../data/templateRepository.js";
 import { validateTemplateData, validateComment } from "../utils/validation.js";
 import { sendSuccessResponse } from "../utils/response.js";
 
 export const createFullTemplate = async (templateData) => {
     const { settings, questions, restrictions, tags } = validateTemplateData(templateData);
-    const newTemplate = await createTemplate(settings);  
+    const newTemplate = await createTemplate(settings);
     await Promise.all([
         handleTemplateQuestions(questions, newTemplate.id),
         createTemplateRestrictions(restrictions, newTemplate.id, newTemplate.creatorId),
         createTemplateTags(tags, newTemplate.id)
     ]);
-    
+
     return { newTemplate };
 };
 
@@ -60,13 +60,26 @@ export const removeLike = async (templateId, currentUserId) => {
 }
 
 export const handleTemplateQuestions = async (questions, templateId) => {
-  const checkboxQuestions = questions.filter(q => q.questionType === 'CHECKBOX');
-  const normalQuestions = questions.filter(q => q.questionType !== 'CHECKBOX');
-  if (normalQuestions.length) {
-    await createTemplateQuestions(normalQuestions, templateId);
-  }
-  for (const q of checkboxQuestions) {
-    const newCheckbox = await createCheckboxQuestions(q, templateId)
-    await createQuestionOptions(newCheckbox.id, q.options);
-  }
+    const checkboxQuestions = questions.filter(q => q.questionType === 'CHECKBOX');
+    const normalQuestions = questions.filter(q => q.questionType !== 'CHECKBOX');
+    if (normalQuestions.length) {
+        await createTemplateQuestions(normalQuestions, templateId);
+    }
+    for (const q of checkboxQuestions) {
+        const newCheckbox = await createCheckboxQuestions(q, templateId)
+        await createQuestionOptions(newCheckbox.id, q.options);
+    }
+};
+
+export const updateFullTemplate = async (templateId, templateData) => {
+    const { settings, questions, restrictions, tags } = validateTemplateData(templateData);
+
+    const updatedTemplateRepo = await updateTemplate(settings, templateId);
+    await clearRelations(templateId)
+    await Promise.all([
+        handleTemplateQuestions(questions, templateId),
+        createTemplateRestrictions(restrictions, templateId, updatedTemplateRepo.creatorId),
+        createTemplateTags(tags, templateId)
+    ]);
+    return { updatedTemplateRepo };
 };

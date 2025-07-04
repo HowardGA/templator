@@ -1,5 +1,5 @@
 import {useQuery, useMutation} from '@tanstack/react-query';
-import { getTopics, getTags, createTag, createTemplate } from '../services/SettingsTabServices';
+import { getTopics, getTags, createTag, createTemplate,updateTemplate } from '../services/SettingsTabServices';
 import { useAntdApi } from "../../../contexts/MessageContext";
 
 export const useGetTopics = () => {
@@ -42,6 +42,22 @@ export const useCreateTemplate = () => {
     onError: (error) => {
       console.log(error)
       messageApi.error(error.message || 'Failed to create template');
+    },
+  })
+}
+
+export const useUpdatePayload = () => {
+  const { message: messageApi } = useAntdApi();
+
+  return useMutation({
+    mutationKey:['templateUpdate'],
+    mutationFn: ({templateData, templateId}) => updateTemplate(templateData,templateId),
+     onSuccess: () => {
+      messageApi.success('Template updated successfully!');
+    },
+    onError: (error) => {
+      console.log(error)
+      messageApi.error(error.message || 'Failed to update template');
     },
   })
 }
