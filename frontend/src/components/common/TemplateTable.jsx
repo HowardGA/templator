@@ -1,10 +1,7 @@
 import { Table, Tag } from 'antd';
-import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 
 const TemplatesTable = ({ templates, onSelectRow }) => {
-  const navigate = useNavigate();
-
   const columns = [
     {
       title: 'Title',
@@ -31,7 +28,7 @@ const TemplatesTable = ({ templates, onSelectRow }) => {
       title: 'Tags',
       dataIndex: 'tags',
       render: (tags) =>
-        tags.map(({ tag }) => (
+        tags?.map(({ tag }) => (
           <Tag key={tag.id} color="blue">
             {tag.name}
           </Tag>

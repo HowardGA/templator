@@ -6,7 +6,8 @@ const router = express.Router();
 router.delete('/delete-image', async (req, res) => {
   try {
     const { deleteUrl } = req.body;
-    const response = await axios.delete(deleteUrl);
+    console.log(deleteUrl);
+    const response = await axios.post(deleteUrl);
     if (response.data.success) {
         return sendSuccessResponse(res, 200, 'Image deleted successfully');
     }

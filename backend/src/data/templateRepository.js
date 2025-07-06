@@ -31,7 +31,7 @@ export const createQuestionOptions = async (questionId, options) => {
   const cleanedOptions = options
     .map((opt, index) => ({
       questionId,
-      optionText: opt.label?.trim(),
+      optionText: opt.optionText?.trim(),
     }))
     .filter(opt => opt.optionText);
   if (!cleanedOptions.length) return;

@@ -13,7 +13,7 @@ const isValidEmail = (email) => {
 };
 
 export const validateRegisterBody = (data) => {
-    const { email, password, confirmPassword } = data;
+    const { email, password, confirmPassword, firstName, lastName } = data;
     checkRequiredFields(data, ['firstName', 'lastName', 'email', 'password', 'confirmPassword']);
     if (!isValidEmail(email)) { 
         throw new ValidationError('Invalid email format.');
@@ -24,7 +24,7 @@ export const validateRegisterBody = (data) => {
     if (password !== confirmPassword) {
         throw new ValidationError('Passwords do not match.');
     }
-    return {email, name: data.name, lastName: data.lastName, password};
+    return {email, firstName, lastName, password};
 };
 
 export const validateLoginBody = (data) => {

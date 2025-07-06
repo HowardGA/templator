@@ -33,6 +33,7 @@ export const useLogin = ({ setUser, setIsAuthenticated }) => {
             setUser(data.user);
             setIsAuthenticated(true);
             messageApi.success(data.message || 'Logged in successfully!'); 
+            queryClient.refetchQueries('currentUser')
         },
         onError: (error) => {
             messageApi.error(error.response?.data?.message || 'Login failed.');
@@ -51,6 +52,7 @@ export const useLogout = ({ setUser, setIsAuthenticated }) => {
             setUser(null);
             setIsAuthenticated(false);
             queryClient.removeQueries('currentUser');
+            queryClient.invalidateQueries(['currentUser']);
             messageApi.success('Logged out successfully!'); 
         },
         onError: (error) => {

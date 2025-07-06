@@ -9,12 +9,14 @@ export const sharedWithMe = async (userId) => {
 }
 
 export const myTemplates = async (userId) => {
-    console.log(userId)
     return await apiClient.get(`/template/mine/${userId}`);
 }
 
 export const myForms = async (userId) => {
-        console.log(userId)
-
+    console.log('here')
     return await apiClient.get(`/form/mine/${userId}`);
+}
+
+export const singleForm = async (formId) => {
+    return await apiClient.get(`/form/single/${formId}`)
 }

@@ -15,7 +15,6 @@ const TemplateTabs = ({templateData, mode}) => {
     console.log(templateData)
     const {user, isLoading } = useAuth();
     const { message: messageApi } = useAntdApi();
-    const [image, setImage] = useState();
     const {mutate: updateTemplate } = useUpdatePayload();
     const [formData, setFormData] = useState(() => {
         if (!templateData) {
@@ -25,6 +24,7 @@ const TemplateTabs = ({templateData, mode}) => {
                     description: '',
                     topicId: null,
                     imageUrl: null,
+                    deleteImgUrl: null,
                     accessType: 'PUBLIC'
                 },
                 questions: [],
@@ -38,6 +38,7 @@ const TemplateTabs = ({templateData, mode}) => {
                 description: templateData.description,
                 topicId: templateData.topic?.id || null,
                 imageUrl: templateData.imageUrl,
+                deleteImgUrl: templateData.deleteImgUrl,
                 accessType: templateData.accessType
             },
             questions: templateData.questions.map((q, index) => ({
@@ -88,8 +89,15 @@ const TemplateTabs = ({templateData, mode}) => {
             tags
         }));
     };
-    const handleImageSelection = (image) => {
-        setImage(image)
+    const handleImageSelection = ({ imageUrl, deleteImgUrl }) => {
+        setFormData(prev => ({
+        ...prev,
+        settings: {
+            ...prev.settings,
+            imageUrl: imageUrl,      
+            deleteImgUrl: deleteImgUrl 
+        }
+    }));
     };
 
     const handleUpdateTemplate = async () => {
@@ -99,7 +107,7 @@ const TemplateTabs = ({templateData, mode}) => {
                 messageApi.error(error);
             return;
             }
-            const payload = TemplatePayload(formData, image, user.id);
+            const payload = TemplatePayload(formData, user.id);
             console.log(payload)
             updateTemplate({templateData: payload, templateId: templateData.id});
         } catch (error) {
@@ -115,7 +123,7 @@ const TemplateTabs = ({templateData, mode}) => {
                 messageApi.error(error);
             return;
             }
-            const payload = TemplatePayload(formData, image, user.id);
+            const payload = TemplatePayload(formData, user.id);
             createTemplate(payload);
         } catch (error) {
             console.error('Template creation failed:', error);

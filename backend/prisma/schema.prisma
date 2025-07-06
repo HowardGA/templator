@@ -72,7 +72,8 @@ model Template {
   description String?          @db.Text
   topic       Topic?           @relation(fields: [topicId], references: [id], onDelete: SetNull)
   topicId     String?          @map("topic_id") 
-  imageUrl    String?          @map("image_url") @db.VarChar(255)
+  imageUrl    String?          @map("image_url") @db.VarChar(255)    
+  deleteImgUrl    String?      @map("delete_image_url") @db.VarChar(255)   
   accessType  TemplateAccessType @default(PUBLIC) @map("access_type")
   version     Int              @default(1)
   createdAt   DateTime         @default(now()) @map("created_at")

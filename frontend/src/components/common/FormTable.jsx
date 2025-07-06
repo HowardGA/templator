@@ -1,10 +1,8 @@
 import { Table } from 'antd';
-import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 
-const FormsTable = ({ forms }) => {
-  const navigate = useNavigate();
-
+const FormsTable = ({ form, onSelectRow }) => {
+  console.log(form)
   const columns = [
     {
       title: 'Template Title',
@@ -25,16 +23,6 @@ const FormsTable = ({ forms }) => {
       sorter: (a, b) => a.version - b.version,
     },
     {
-      title: 'Answers',
-      dataIndex: ['_count', 'answers'],
-      sorter: (a, b) => a._count.answers - b._count.answers,
-    },
-    {
-      title: 'Checkbox Options',
-      dataIndex: ['_count', 'answerOptions'],
-      sorter: (a, b) => a._count.answerOptions - b._count.answerOptions,
-    },
-    {
       title: 'Submitted At',
       dataIndex: 'submittedAt',
       sorter: (a, b) => new Date(a.submittedAt) - new Date(b.submittedAt),
@@ -46,10 +34,10 @@ const FormsTable = ({ forms }) => {
     <Table
       rowKey="id"
       columns={columns}
-      dataSource={forms}
+      dataSource={form}
       pagination={{ pageSize: 10 }}
       onRow={(record) => ({
-        onClick: () => navigate(`/teamplete-fill/${record.id}`, {state:{mode:'updating', answers:record.answers, templateData: record}}), 
+        onClick: () => {onSelectRow?.(record)},
         style: { cursor: 'pointer' },
       })}
     />

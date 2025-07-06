@@ -54,3 +54,8 @@ export const deleteImageFromImgBB = async (deleteUrl) => {
     });
   return response.data;
 };
+
+
+export const deleteTemplate = async (templateId) => {
+  return await apiClient.delete(`/template/${templateId}`);
+}
