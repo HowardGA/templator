@@ -30,7 +30,7 @@ export const validateQuestions = (questions) => {
       if (!q.options || q.options.length === 0) {
         return { valid: false, message: "Checkbox questions must have at least one option." };
       }
-      const hasEmptyLabel = q.options.some(opt => !opt.label?.trim());
+      const hasEmptyLabel = q.options.some(opt => !opt.optionText?.trim());
       if (hasEmptyLabel) {
         return { valid: false, message: "All checkbox options must have labels." };
       }
@@ -49,13 +49,14 @@ export const validateData = async (formData, user) => {
   }
 }
 
-export const TemplatePayload = (formData, image,userId) => {
+export const TemplatePayload = (formData,userId) => {
   const payload = {
     ...formData,
       settings: {
           ...formData.settings,
           title: formData.settings.title.trim(),
-          imageUrl: (image) ? image.image : '',
+          imageUrl: formData.settings.imageUrl || null,
+          deleteImgUrl: formData.settings.deleteImgUrl || null,
           creatorId:userId
       },
       tags: formData.tags.map(tag =>

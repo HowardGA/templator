@@ -28,6 +28,8 @@ const MainFormDetails = ({
         }
     );
     const {data: topics, isLoading: topicsLoading} = useGetTopics();
+    const [imageUrl, setImageUrl] = useState(initialSettings.imageUrl || null);
+    const [deleteImgUrl, setDeleteImgUrl] = useState(initialSettings.deleteImgUrl || null);
 
     useEffect(() => {
         if (editingDescription) {
@@ -59,8 +61,10 @@ const MainFormDetails = ({
         onSettingsChange?.({ topicId });
     };
 
-    const handleImageChange = (image) => {
-        onImageSelection?.({ image });
+    const handleImageChange = ({ url, deleteUrl }) => {
+        setImageUrl(url);
+        setDeleteImgUrl(deleteUrl); 
+        onImageSelection?.({ imageUrl: url, deleteImgUrl: deleteUrl });
     };
 
     const handleAccessChange = (e) => {
@@ -147,7 +151,7 @@ const MainFormDetails = ({
                     />
                 )}
                 <Divider orientation="left">Image (optional)</Divider>
-                    <ImageInput onImageUploaded={handleImageChange} initialImage={initialSettings.imageUrl}/>
+                    <ImageInput onImageUploaded={handleImageChange} initialImage={{url: initialSettings.imageUrl, deleteUrl: initialSettings.deleteImgUrl}}/>
                 <Divider orientation="left">Tags</Divider>
                     <TagInputAutoComplete onChange={onTagsChange} initialTags={initialTags} mode={mode}/>
                 <Divider orientation="left">Access</Divider>

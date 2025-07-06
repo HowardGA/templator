@@ -101,9 +101,7 @@ export const myForms = async (userId, { take = 10, skip = 0 } = {}) => {
 
 export const singleForm = (formId) => {
   return prisma.form.findFirst({
-    where: {
-      id: formId,
-    },
+    where: { id: formId },
     include: {
       filler: {
         select: {
@@ -118,6 +116,49 @@ export const singleForm = (formId) => {
           id: true,
           title: true,
           description: true,
+          imageUrl: true,
+          accessType: true,
+          createdAt: true,
+          updatedAt: true,
+          version: true,
+          topic: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          creator: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+          tags: {
+            select: {
+              tag: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+          questions: {
+            select: {
+              id: true,
+              title: true,
+              description: true,
+              questionType: true,
+              required: true,
+              options: {
+                select: {
+                  id: true,
+                  optionText: true,
+                },
+              },
+            },
+          },
         },
       },
       answers: {
@@ -148,5 +189,30 @@ export const singleForm = (formId) => {
         },
       },
     },
+  });
+};
+
+export const updateForm = async (formId, { answers }) => {
+  return await prisma.$transaction(async (tx) => {
+    const updatedForm = await tx.form.update({
+      where: { id: formId },
+      data: { updatedAt: new Date() },
+    });
+    await tx.formAnswer.deleteMany({ where: { formId } });
+    await tx.formAnswerOption.deleteMany({ where: { formId } });
+    const { formAnswers, formAnswerOptions } = answerBulking(answers, formId);
+    if (formAnswers.length) {
+      await tx.formAnswer.createMany({ data: formAnswers });
+    }
+    if (formAnswerOptions.length) {
+      await tx.formAnswerOption.createMany({ data: formAnswerOptions });
+    }
+    return { updatedForm };
+  });
+};
+
+export const deleteForm = async (formId) => {
+  return await prisma.form.delete({ 
+    where: { id: formId } 
   });
 };

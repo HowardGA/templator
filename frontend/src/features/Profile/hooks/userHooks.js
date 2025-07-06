@@ -1,4 +1,4 @@
-import { getUserWithEmailAndName, myForms, myTemplates, sharedWithMe } from "../services/userService";
+import { getUserWithEmailAndName, myForms, myTemplates, sharedWithMe, singleForm } from "../services/userService";
 import {useQuery} from '@tanstack/react-query';
 
 export const useGetUserEmailAndName = () => {
@@ -36,11 +36,22 @@ export const useGetMyTemplates = (userId) => {
 
 export const useGetMyForms = (userId) => {
   return useQuery({
-    queryKey: ['myTemplates'],
-    queryFn: () => myForms({userId}),
-     staleTime: 60 * 60 * 1000, 
+    queryKey: ['myForms'],
+    queryFn: () => myForms(userId),
+    staleTime: 60 * 60 * 1000, 
     cacheTime: 24 * 60 * 60 * 1000, 
     retry: 1, 
     refetchOnWindowFocus: false, 
   })
 };
+
+export const useGetSingleForm = (formId) => {
+  return useQuery({
+    queryKey: ['formDetails', formId],
+    queryFn: () => singleForm(formId),
+    staleTime: 60 * 60 * 1000, 
+    cacheTime: 24 * 60 * 60 * 1000, 
+    retry: 1, 
+    refetchOnWindowFocus: false, 
+  })
+}

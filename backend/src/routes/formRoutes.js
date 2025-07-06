@@ -1,7 +1,7 @@
 import express from 'express';
 import { sendErrorResponse, sendSuccessResponse } from '../utils/response.js';
 import { createForm } from '../services/formService.js';
-import { myForms, singleForm } from '../data/formRepository.js';
+import { myForms, singleForm, updateForm, deleteForm } from '../data/formRepository.js';
 const router = express.Router();
 
 router.post('/fill', async (req, res) => {
@@ -32,6 +32,27 @@ router.get('/single/:id', async (req, res) => {
     } catch (error) {
         sendErrorResponse(res, error);
     }
+});
+
+router.put('/upd/:id', async (req, res) => {
+    try{
+        const formId = req.params.id;
+        const formData = req.body;
+        const updForm = await updateForm(formId, formData);
+        sendSuccessResponse(res, 201, 'Successfully updated a form', updForm);
+    } catch (error) {
+        sendErrorResponse(res, error);
+    }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    const formId = req.params.id;
+    const deletedForm = await deleteForm(formId);
+    sendSuccessResponse(res, 200, 'Form deleted successfully', deletedForm);
+  } catch (error) {
+    sendErrorResponse(res, error);
+  }
 });
 
 export default router;

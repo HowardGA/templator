@@ -4,13 +4,15 @@ import { Alert, Spin } from "antd";
 import TableToolbar from "../../../components/common/TableToolbar";
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
+import { useDeleteTemplate } from "../../Template-Creator/hooks/settingsHooks";
 
 
 const MyTemplates = ({userId}) => {
     const {data: myTemplates, isLoading: myTemplatesLoading} = useGetMyTemplates(userId);
+    const {mutate: deleteTemplate} = useDeleteTemplate();
     const [selectedRow, setSelectedRow] = useState(null);
     const navigate = useNavigate();
-    //delete
+
     const handleView = (item) => {
         navigate(`/template-preview/${item.id}`, {
         state: { templateData: item, mode: 'view' },

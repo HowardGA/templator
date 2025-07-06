@@ -1,43 +1,46 @@
 import { Form, Input, InputNumber, Checkbox, Button, Typography } from "antd";
 import { useAuth } from "../../../contexts/AuthContext";
-import { useFillForm } from "../hooks/formHook";
+import { useFillForm, useUpdateForm } from "../hooks/formHook";
 import { useEffect } from "react";
 const { Text } = Typography;
 
-const Questions = ({ questions, templateId, mode = 'create', initialAnswers = [] }) => {
+const Questions = ({ questions, templateId, mode = 'create', initialAnswers = [], initialCheckboxAnswers = [], formId = '' }) => {
   const [form] = Form.useForm();
   const { user } = useAuth();
   const { mutate: fillForm, isPending: submittingForm } = useFillForm();
+  const { mutate: updateForm, isPending: updatingForm } = useUpdateForm();
 
-  useEffect(() => {
-    if (mode !== 'create' && initialAnswers.length > 0) {
+    useEffect(() => {
+    if (mode !== 'create') {
       const initialValues = {};
-      initialAnswers.forEach((answer, index) => {
+      questions.forEach((question, index) => {
         const key = `q${index + 1}`;
-        if (answer.question.questionType === 'CHECKBOX') {
-          initialValues[key] = answer.selectedOptions || [];
+        if (question.questionType === 'CHECKBOX') {
+          initialValues[key] = initialCheckboxAnswers
+            .filter(ao => ao.questionId === question.id)
+            .map(ao => ao.optionId);
         } else {
+          const answer = initialAnswers.find(a => a.questionId === question.id);
           initialValues[key] = 
-            answer.stringValue ?? 
-            answer.textValue ?? 
-            answer.intValue ?? 
-            answer.checkbox ?? '';
+            answer?.stringValue ??
+            answer?.textValue ??
+            answer?.intValue ??
+            '';
         }
       });
-
       form.setFieldsValue(initialValues);
     }
-  }, [initialAnswers, form, mode]);
+}, [initialAnswers, initialCheckboxAnswers, form, mode, questions]);
 
   const renderInput = (question) => {
     const isDisabled = mode === 'view';
     switch (question.questionType) {
       case "SINGLE_LINE_STRING":
-        return <Input placeholder="Short answer" disabled={isDisabled}/>;
+        return <Input placeholder="Short answer" disabled={isDisabled} />;
       case "MULTI_LINE_TEXT":
-        return <Input.TextArea rows={4} placeholder="Long answer" disabled={isDisabled}/>;
+        return <Input.TextArea rows={4} placeholder="Long answer" disabled={isDisabled} />;
       case "NON_NEGATIVE_INTEGER":
-        return <InputNumber style={{ width: '100%' }} placeholder="Non negative int" min={0} disabled={isDisabled}/>;
+        return <InputNumber style={{ width: '100%' }} placeholder="Non negative int" min={0} disabled={isDisabled} />;
       case "CHECKBOX":
         return (
           <Checkbox.Group
@@ -57,7 +60,6 @@ const Questions = ({ questions, templateId, mode = 'create', initialAnswers = []
   };
 
   const handleSubmit = (values) => {
-    if (mode !== 'create') return;
     const answers = Object.entries(values).map(([key, value], index) => {
       const question = questions[index];
       return {
@@ -66,13 +68,21 @@ const Questions = ({ questions, templateId, mode = 'create', initialAnswers = []
         value,
       };
     });
+
     const payload = {
       templateId,
       fillerUserId: user.id,
       answers,
     };
-    fillForm(payload)
+
+    if (mode === 'create') {
+      fillForm(payload);
+    } else if (mode === 'updating') {
+      console.log('hereUDP')
+      updateForm({ formId: formId, updatedAnswers: payload });
+    }
   };
+
 
   return (
     <Form
@@ -92,7 +102,7 @@ const Questions = ({ questions, templateId, mode = 'create', initialAnswers = []
           <Form.Item
             key={q.id}
             name={`q${index + 1}`}
-            valuePropName={q.questionType === "CHECKBOX" ? "checked" : "value"}
+            valuePropName='value'
             rules={[
               {
                 required: q.required,
@@ -108,6 +118,13 @@ const Questions = ({ questions, templateId, mode = 'create', initialAnswers = []
         <Form.Item>
           <Button type="primary" htmlType="submit">
             Submit Form
+          </Button>
+        </Form.Item>
+      )}
+      {mode === 'updating' && (
+        <Form.Item>
+          <Button type="primary" htmlType="submit">
+            Submit Edited Form
           </Button>
         </Form.Item>
       )}

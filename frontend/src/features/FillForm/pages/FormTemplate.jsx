@@ -5,20 +5,39 @@ import {
   Divider,
   Tag,
   Avatar,
+  Spin
 } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import ReactMarkdown from "react-markdown";
 import { useParams, useLocation } from "react-router-dom";
 import Questions from "../components/Questions";
+import { useGetSingleForm } from "../../Profile/hooks/userHooks";
 
 const { Title, Text, Paragraph } = Typography;
 
 const FormTemplate = () => {
   const { id } = useParams();
   const location = useLocation();
-  const template = location.state?.templateData;
-  const mode = location.state?.mode || 'create';
-  const initialAnswers = location.state?.answers || [];
+  const passedTemplateData = location.state?.templateData || null;
+  const mode = location.state?.mode || "create";
+  const shouldFetchForm = !passedTemplateData;
+  const {data: formDetails, isLoading: formDetailsLoading, isError} = useGetSingleForm(id, {enabled: shouldFetchForm});
+  const templateData = passedTemplateData?.data || formDetails?.data?.template || null;
+  const initialAnswers = formDetails?.data?.answers || [];
+
+  if (formDetailsLoading && shouldFetchForm) return <Spin />;
+  if (isError && shouldFetchForm)
+    return <Alert message="Error loading form" type="error" showIcon />;
+  console.log(formDetails)
+  if (!templateData) {
+    return (
+      <Alert
+        message="Template data is missing"
+        type="error"
+        showIcon
+      />
+    );
+  }
 
   return (
     <div
@@ -31,26 +50,26 @@ const FormTemplate = () => {
       <Card
         style={{ width: "100%" }}
         cover={
-          template.data.imageUrl ? (
+          templateData.imageUrl ? (
             <img
-              src={template.data.imageUrl}
-              alt={template.data.title}
+              src={templateData.imageUrl}
+              alt={templateData.title}
               style={{ maxHeight: 300, objectFit: "cover" }}
             />
           ) : null
         }
       >
-        <Title level={2}>{template.data.title}</Title>
+        <Title level={2}>{templateData.title}</Title>
 
         <Paragraph>
           <ReactMarkdown>
-            {template.data.description || "No description provided."}
+            {templateData.description || "No description provided."}
           </ReactMarkdown>
         </Paragraph>
 
         <Space size="small" wrap>
-          <Tag color="blue">{template.data.topic?.name}</Tag>
-          {template.data.tags?.map(({ tag }) => (
+          <Tag color="blue">{templateData.topic?.name}</Tag>
+          {(templateData.tags || []).map(({ tag }) => (
             <Tag color="purple" key={tag.id}>
               {tag.name}
             </Tag>
@@ -61,23 +80,25 @@ const FormTemplate = () => {
 
           <Space align="center">
             <Avatar
-              src={template.data.creator?.avatar}
+              src={templateData.creator?.avatar}
               icon={<UserOutlined />}
             />
             <Text>
-              Created by {template.data.creator?.firstName}{" "}
-              {template.data.creator?.lastName}
+              Created by {templateData.creator?.firstName}{" "}
+              {templateData.creator?.lastName}
             </Text>
             <Text type="secondary">
-              {new Date(template.data.createdAt).toLocaleDateString()}
+              {new Date(templateData.createdAt).toLocaleDateString()}
             </Text>
           </Space>
       </Card>
       <Questions 
-          questions={template.data.questions} 
-          templateId={id}
+          questions={templateData.questions || []} 
+          templateId={templateData.id}
           mode={mode}
           initialAnswers={initialAnswers}
+          initialCheckboxAnswers={formDetails?.data?.answerOptions || []}
+          formId={formDetails?.data?.id || ''}
       />
     </div>
   );

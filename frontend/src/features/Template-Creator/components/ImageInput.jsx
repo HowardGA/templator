@@ -6,7 +6,7 @@ import { useAntdApi } from '../../../contexts/MessageContext';
 
 const { Dragger } = Upload;
 
-const ImageInput = ({ onImageUploaded, initialImage }) => {
+const ImageInput = ({ onImageUploaded, initialImage = { url: null, deleteUrl: null } }) => {
     const { message: messageApi } = useAntdApi();
     const [fileList, setFileList] = useState([]);
     const [currentImage, setCurrentImage] = useState({
@@ -17,18 +17,19 @@ const ImageInput = ({ onImageUploaded, initialImage }) => {
     const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
-    if (initialImage) {
+    if (initialImage.url) {
         setCurrentImage(prev => ({
             ...prev,
-            url: initialImage,
+            url: initialImage.url,
+            deleteUrl: initialImage.deleteUrl,
         }));
         setFileList([
             {
                 uid: '-1',
                 name: 'initial-image',
                 status: 'done',
-                url: initialImage,
-                thumbUrl: initialImage
+                url: initialImage.url,
+                thumbUrl: initialImage.url
             }
         ]);
     }
@@ -47,7 +48,7 @@ const ImageInput = ({ onImageUploaded, initialImage }) => {
                 }
             }
             setCurrentImage({ url: null, deleteUrl: null, file: null });
-            onImageUploaded(null);
+            onImageUploaded({ url: null, deleteUrl: null });
             setFileList([]);
             return;
         }
@@ -64,7 +65,7 @@ const ImageInput = ({ onImageUploaded, initialImage }) => {
                 const { url, deleteUrl } = await uploadImageToImgBB(newFile.originFileObj);
                 
                 setCurrentImage({ url, deleteUrl, file: newFile.originFileObj });
-                onImageUploaded(url);
+                onImageUploaded({ url, deleteUrl });
                 setFileList([{
                     ...newFile,
                     status: 'done',
