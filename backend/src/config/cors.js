@@ -1,5 +1,5 @@
 export const CorsConfig = {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: ['http://localhost:5173', 'https://templator-eta.vercel.app'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-type', 'Authorization'],
     credentials: true, 
