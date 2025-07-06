@@ -78,23 +78,6 @@ model Template {
   createdAt   DateTime         @default(now()) @map("created_at")
   updatedAt   DateTime         @updatedAt @map("updated_at")
 
-  displayString1InResults  Boolean @default(false) @map("display_string1_in_results")
-  displayString2InResults  Boolean @default(false) @map("display_string2_in_results")
-  displayString3InResults  Boolean @default(false) @map("display_string3_in_results")
-  displayString4InResults  Boolean @default(false) @map("display_string4_in_results")
-  displayText1InResults    Boolean @default(false) @map("display_text1_in_results")
-  displayText2InResults    Boolean @default(false) @map("display_text2_in_results")
-  displayText3InResults    Boolean @default(false) @map("display_text3_in_results")
-  displayText4InResults    Boolean @default(false) @map("display_text4_in_results")
-  displayInt1InResults     Boolean @default(false) @map("display_int1_in_results")
-  displayInt2InResults     Boolean @default(false) @map("display_int2_in_results")
-  displayInt3InResults     Boolean @default(false) @map("display_int3_in_results")
-  displayInt4InResults     Boolean @default(false) @map("display_int4_in_results")
-  displayCheckbox1InResults Boolean @default(false) @map("display_checkbox1_in_results")
-  displayCheckbox2InResults Boolean @default(false) @map("display_checkbox2_in_results")
-  displayCheckbox3InResults Boolean @default(false) @map("display_checkbox3_in_results")
-  displayCheckbox4InResults Boolean @default(false) @map("display_checkbox4_in_results")
-
   questions   TemplateQuestion[]   
   forms       Form[]
   comments    Comment[]
@@ -113,8 +96,37 @@ model TemplateQuestion {
   questionType  QuestionType @map("question_type")
   title         String       @db.VarChar(255)
   description   String?      @db.Text 
+  required      Boolean      @default(false) @map("required")
+  showInResults Boolean      @default(false)
+
+  options     QuestionOption[]
+  formAnswerOptions FormAnswerOption[]
+  formAnswers       FormAnswer[]
   @@unique([templateId, questionIndex])
   @@map("template_questions")
+}
+
+model QuestionOption {
+  id          String          @id @default(uuid())
+  question    TemplateQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId  String
+  optionText  String          @db.VarChar(100)
+  
+  selectedInAnswers FormAnswerOption[]
+  @@map("question_options")
+}
+
+model FormAnswerOption {
+  id          String         @id @default(uuid())
+  form        Form           @relation(fields: [formId], references: [id], onDelete: Cascade)
+  formId      String
+  question    TemplateQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId  String
+  selectedOption QuestionOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  optionId    String
+  createdAt   DateTime       @default(now())
+  @@unique([formId, questionId, optionId])
+  @@map("form_answer_options")
 }
 
 model TemplateRestriction {
@@ -158,24 +170,23 @@ model Form {
   submittedAt    DateTime @default(now()) @map("submitted_at") 
   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  answerString1  String?  @db.VarChar(500) @map("answer_string1")
-  answerString2  String?  @db.VarChar(500) @map("answer_string2")
-  answerString3  String?  @db.VarChar(500) @map("answer_string3")
-  answerString4  String?  @db.VarChar(500) @map("answer_string4")
-  answerText1    String?  @db.Text @map("answer_text1")
-  answerText2    String?  @db.Text @map("answer_text2")
-  answerText3    String?  @db.Text @map("answer_text3")
-  answerText4    String?  @db.Text @map("answer_text4")
-  answerInt1     Int?     @map("answer_int1")
-  answerInt2     Int?     @map("answer_int2")
-  answerInt3     Int?     @map("answer_int3")
-  answerInt4     Int?     @map("answer_int4")
-  answerCheckbox1 Boolean? @map("answer_checkbox1")
-  answerCheckbox2 Boolean? @map("answer_checkbox2")
-  answerCheckbox3 Boolean? @map("answer_checkbox3")
-  answerCheckbox4 Boolean? @map("answer_checkbox4")
-  @@map("forms")
+  answerOptions  FormAnswerOption[]
+  answers        FormAnswer[]
 }
+
+model FormAnswer {
+  id          String   @id @default(uuid())
+  form        Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+  formId      String
+  question    TemplateQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId  String
+  stringValue String?  @db.VarChar(500)
+  textValue   String?  @db.Text
+  intValue    Int?
+  checkbox    Boolean?
+  createdAt   DateTime @default(now())
+}
+
 
 model Comment {
   id          String   @id @default(uuid()) @map("id") 

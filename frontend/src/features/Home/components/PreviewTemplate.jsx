@@ -9,6 +9,7 @@ import {
   Avatar,
   Spin,
   Alert,
+  List
 } from "antd";
 import { UserOutlined, FormOutlined } from "@ant-design/icons";
 import ReactMarkdown from "react-markdown";
@@ -16,21 +17,23 @@ import CommentsSection from "./CommentsSection";
 import LikeButton from "./LikeButton";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useTemplateDetails } from "../hooks/mainPageHooks";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { QUESTION_TYPES } from "../../Template-Creator/components/QuestionItem";
+import { FiSettings } from "react-icons/fi";
 
 const { Title, Text, Paragraph } = Typography;
 const { Panel } = Collapse;
 
 const TemplatePreview = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const {
     data: template,
     isLoading: templateLoading,
     isError,
     error,
-  } = useTemplateDetails(id, user.id);
+  } = useTemplateDetails(id, user? user.id : null);
 
   if (templateLoading) {
     return (
@@ -50,6 +53,7 @@ const TemplatePreview = () => {
       />
     );
   }
+      console.log(template.data)
 
   return (
     <div
@@ -110,13 +114,17 @@ const TemplatePreview = () => {
               {new Date(template.data.createdAt).toLocaleDateString()}
             </Text>
           </Space>
-
+          {user &&
           <Space>
-            <Button type="primary" icon={<FormOutlined />}>
+            {(template.data.creator?.id === user.id || user.role === 'ADMIN') &&
+              <Button variant="solid" color="orange" icon={<FiSettings />} onClick={() => navigate('/template-creator', {state: {templateData: template.data}})}>
+              Edit Template
+            </Button>}
+            <Button type="primary" icon={<FormOutlined />} onClick={() => navigate(`/teamplete-fill/${id}`, { state: { templateData: template}})}>
               Take This Form
             </Button>
             <LikeButton template={template.data} userId={user.id} />
-          </Space>
+          </Space>}
         </div>
       </Card>
 
@@ -141,6 +149,14 @@ const TemplatePreview = () => {
               >
                 <Text type="secondary">{q.description}</Text>
               </div>
+              { q.options && q.options.length > 0 && (
+                <List
+    
+                  size="small"
+                  dataSource={q.options}
+                  renderItem={(item) => <List.Item>{item.optionText}</List.Item>}
+                />
+              )}
             </div>
           ))}
         </Panel>

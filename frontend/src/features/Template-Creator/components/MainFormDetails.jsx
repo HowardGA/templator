@@ -9,12 +9,24 @@ import RestrictedTemplateComponent from "./RestrictedTemplateComponent";
 import { useGetTopics } from "../hooks/settingsHooks";
 const { Title } = Typography;
 
-const MainFormDetails = ({ onSettingsChange, onRestrictionsChange, onTagsChange, onImageSelection }) => {
-    const [title, setTitle] = useState("Your Template Title");
-    const [description, setDescription] = useState("");
+const MainFormDetails = ({ 
+    onSettingsChange, 
+    onRestrictionsChange, 
+    onTagsChange, onImageSelection, 
+    initialSettings = {},
+    initialTags = [],
+    initialRestrictions = [],
+    mode
+}) => {
+    const [title, setTitle] = useState(initialSettings.title || "Your Template Title");
+    const [description, setDescription] = useState(initialSettings.description || "");
     const [editingDescription, setEditingDescription] = useState(false);
     const [tempDescription, setTempDescription] = useState("");
-    const [showRestrictedComponent, setShowRestrictedComponent] = useState(false);
+    const [showRestrictedComponent, setShowRestrictedComponent] = useState(() => {
+        const isRestricted = (initialSettings.accessType === 'PUBLIC') ? false : true
+        return isRestricted
+        }
+    );
     const {data: topics, isLoading: topicsLoading} = useGetTopics();
 
     useEffect(() => {
@@ -131,12 +143,13 @@ const MainFormDetails = ({ onSettingsChange, onRestrictionsChange, onTagsChange,
                         options={topics?.data || []}
                         placeholder="Select a topic"
                         onChange={handleTopicChange}
+                        value={initialSettings.topicId || null}
                     />
                 )}
                 <Divider orientation="left">Image (optional)</Divider>
-                    <ImageInput onImageUploaded={handleImageChange} />
+                    <ImageInput onImageUploaded={handleImageChange} initialImage={initialSettings.imageUrl}/>
                 <Divider orientation="left">Tags</Divider>
-                    <TagInputAutoComplete onChange={onTagsChange}/>
+                    <TagInputAutoComplete onChange={onTagsChange} initialTags={initialTags} mode={mode}/>
                 <Divider orientation="left">Access</Divider>
                     <Radio.Group
                         options={[
@@ -144,9 +157,10 @@ const MainFormDetails = ({ onSettingsChange, onRestrictionsChange, onTagsChange,
                             { value: 'RESTRICTED', label: 'Restricted' },
                         ]}
                         onChange={handleAccessChange}
+                        value={initialSettings.accessType}
                     />
                     {
-                        showRestrictedComponent && <RestrictedTemplateComponent onChange={onRestrictionsChange}/>
+                        showRestrictedComponent && <RestrictedTemplateComponent onChange={onRestrictionsChange} restrictions={initialRestrictions}/>
                     }
             </div>
         </Card>

@@ -3,11 +3,19 @@ import { useState, useMemo, useEffect } from 'react';
 import { debounce } from 'lodash';
 import { useGetTags } from '../hooks/settingsHooks';
 
-const TagInputAutoComplete = ({ onChange }) => {
+const TagInputAutoComplete = ({ onChange, initialTags, mode }) => {
     const [options, setOptions] = useState([]);
     const {data: tags, isLoading: tagsLoading} = useGetTags();
     const [selectedTags, setSelectedTags] = useState([]); 
     const [searchLoading, setSearchLoading] = useState(false);
+
+    useEffect(() => {
+    if (initialTags && mode === 'updating') {
+        console.log(initialTags)
+        const normalized = initialTags.map(tag => tag.id);
+        setSelectedTags(normalized);
+    }
+    }, [initialTags]);
 
     useEffect(() => {
         if (tags?.data) {

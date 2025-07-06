@@ -1,6 +1,6 @@
 import { useLatestTemplates } from "../hooks/mainPageHooks";
 import TemplateCard from "./TemplateCard";
-import { Row, Col, Pagination, Spin } from "antd";
+import { Row, Col, Pagination, Spin, Alert } from "antd";
 import { useState } from "react";
 
 const LastestTemplates = () => {

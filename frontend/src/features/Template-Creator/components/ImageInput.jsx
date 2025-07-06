@@ -6,7 +6,7 @@ import { useAntdApi } from '../../../contexts/MessageContext';
 
 const { Dragger } = Upload;
 
-const ImageInput = ({ onImageUploaded }) => {
+const ImageInput = ({ onImageUploaded, initialImage }) => {
     const { message: messageApi } = useAntdApi();
     const [fileList, setFileList] = useState([]);
     const [currentImage, setCurrentImage] = useState({
@@ -15,6 +15,24 @@ const ImageInput = ({ onImageUploaded }) => {
         file: null
     });
     const [uploading, setUploading] = useState(false);
+
+    useEffect(() => {
+    if (initialImage) {
+        setCurrentImage(prev => ({
+            ...prev,
+            url: initialImage,
+        }));
+        setFileList([
+            {
+                uid: '-1',
+                name: 'initial-image',
+                status: 'done',
+                url: initialImage,
+                thumbUrl: initialImage
+            }
+        ]);
+    }
+}, [initialImage]);
 
     const handleChange = async (info) => {
         const newFileList = info.fileList.slice(-1);

@@ -34,7 +34,7 @@ const QuestionMaker = ({ questions = [], onQuestionsChange }) => {
             title: "",
             description: "",
             questionType: "",
-            isRequired: false,
+            required: false,
             options: [],
         };
         const updatedItems = [...items, newItem];
@@ -56,48 +56,50 @@ const QuestionMaker = ({ questions = [], onQuestionsChange }) => {
     const questionCount = questions.length;
 
     return (
-        <DndContext
-            collisionDetection={closestCenter}
-            modifiers={[restrictToVerticalAxis]}
-            onDragEnd={handleDragEnd}
-        >
-            <SortableContext
-                items={items.map((item) => item.key)}
-                strategy={verticalListSortingStrategy}
+        <div style={{ width: '80%' }}>
+            <DndContext
+                collisionDetection={closestCenter}
+                modifiers={[restrictToVerticalAxis]}
+                onDragEnd={handleDragEnd}
             >
-                <div style={{ display: "flex", rowGap: 24, flexDirection: "column" }}>
-                    {items.map((item, index) => (
-                        <QuestionItem
-                            id={item.key}
-                            key={item.key}
-                            item={item}
-                            index={index}
-                            remove={() => handleRemove(index)}
-                            isRemovable={items.length > 1}
-                            onChange={(updatedFields) => {
-                                const newItems = [...items];
-                                newItems[index] = { ...newItems[index], ...updatedFields };
-                                setItems(newItems);
-                                onQuestionsChange?.(newItems);
-                            }}
-                        />
-                    ))}
+                <SortableContext
+                    items={items.map((item) => item.key)}
+                    strategy={verticalListSortingStrategy}
+                >
+                    <div style={{ display: "flex", rowGap: 24, flexDirection: "column" }}>
+                        {items.map((item, index) => (
+                            <QuestionItem
+                                id={item.key}
+                                key={item.key}
+                                item={item}
+                                index={index}
+                                remove={() => handleRemove(index)}
+                                isRemovable={items.length > 1}
+                                onChange={(updatedFields) => {
+                                    const newItems = [...items];
+                                    newItems[index] = { ...newItems[index], ...updatedFields };
+                                    setItems(newItems);
+                                    onQuestionsChange?.(newItems);
+                                }}
+                            />
+                        ))}
 
-                    <Button
-                        type="primary"
-                        onClick={handleAdd}
-                        block
-                        disabled={questionCount >= MAX_QUESTIONS}
-                        icon={<PlusOutlined />}
-                        style={{ marginTop: 16 }}
-                    >
-                        {questionCount >= MAX_QUESTIONS
-                            ? `Maximum ${MAX_QUESTIONS} Questions Reached`
-                            : "Add Question"}
-                    </Button>
-                </div>
-            </SortableContext>
-        </DndContext>
+                        <Button
+                            type="primary"
+                            onClick={handleAdd}
+                            block
+                            disabled={questionCount >= MAX_QUESTIONS}
+                            icon={<PlusOutlined />}
+                            style={{ marginTop: 16 }}
+                        >
+                            {questionCount >= MAX_QUESTIONS
+                                ? `Maximum ${MAX_QUESTIONS} Questions Reached`
+                                : "Add Question"}
+                        </Button>
+                    </div>
+                </SortableContext>
+            </DndContext>
+        </div>
     );
 };
 

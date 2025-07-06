@@ -14,13 +14,13 @@ const getMenuItems = (isAuthenticated) => [
         icon: <FaHome />
     },
     isAuthenticated && {
-        key: 'my-templates',
-        label: <Link to="/my-templates">My Templates</Link>,
+        key: 'shared-me',
+        label: <Link to="/shared-me">Shared With Me</Link>,
         icon: <FaWpforms />
     },
     isAuthenticated && {
         key: 'create-template',
-        label: <Link to="/create-template">Create Template</Link>,
+        label: <Link to="/template-creator">Create Template</Link>,
         icon: <FaPlusSquare />
     },
     isAuthenticated && {

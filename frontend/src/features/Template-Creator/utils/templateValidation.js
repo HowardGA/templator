@@ -1,4 +1,4 @@
-export function validateTemplateData({ formData, user }) {
+export function validateTemplateData( formData, user ) {
   const { title, description, topicId, accessType } = formData.settings || {};
   if (!user) {
     return { valid: false, message: 'No user loaded' };
@@ -19,4 +19,48 @@ export function validateTemplateData({ formData, user }) {
     return { valid: false, message: 'At least one question is required' };
   }
   return { valid: true };
+}
+
+export const validateQuestions = (questions) => {
+  for (const q of questions) {
+    if (!q.title?.trim()) return { valid: false, message: "Titles are required." };
+    if (!q.questionType) return { valid: false, message: "All questions must have a type." };
+
+    if (q.questionType === "CHECKBOX") {
+      if (!q.options || q.options.length === 0) {
+        return { valid: false, message: "Checkbox questions must have at least one option." };
+      }
+      const hasEmptyLabel = q.options.some(opt => !opt.label?.trim());
+      if (hasEmptyLabel) {
+        return { valid: false, message: "All checkbox options must have labels." };
+      }
+    }
+  }
+
+  return { valid: true };
+};
+
+export const validateData = async (formData, user) => {
+  console.log(formData)
+  const validation = validateTemplateData( formData, user );
+  const { valid, message } = validateQuestions(formData.questions);
+  if (!validation.valid || !valid) {
+    return message;
+  }
+}
+
+export const TemplatePayload = (formData, image,userId) => {
+  const payload = {
+    ...formData,
+      settings: {
+          ...formData.settings,
+          title: formData.settings.title.trim(),
+          imageUrl: (image) ? image.image : '',
+          creatorId:userId
+      },
+      tags: formData.tags.map(tag =>
+          typeof tag === 'string' ? tag.trim() : tag
+      )
+  }
+  return payload;
 }

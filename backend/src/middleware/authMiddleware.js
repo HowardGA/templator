@@ -41,9 +41,9 @@ const fetchAndValidateUserForRefresh = async (res, email) => {
 };
 
 const issueAndSetNewTokens = (res, user) => {
-        console.log('User object before token generation:', user); // Debug line
-
+    console.log('User object before token generation:', user); // Debug line
     const tokenPayload = { id: user.id, email: user.email, role: user.role, name: user.firstName + ' ' + user.lastName };
+    console.log(tokenPayload);
     const newAccessToken = generateAccessToken(tokenPayload);
     const newRefreshToken = generateRefreshToken(tokenPayload);
     setAuthCookies(res, newAccessToken, newRefreshToken);
@@ -57,6 +57,8 @@ export const authenticateToken = async (req, res, next) => {
         return;
     }
     const decodedAccess = accessToken ? verifyAccessToken(accessToken) : null;
+    console.log("Decoded access token:", decodedAccess);
+
     if (decodedAccess) {
         req.user = getUserFromDecodedToken(decodedAccess);
         return next();

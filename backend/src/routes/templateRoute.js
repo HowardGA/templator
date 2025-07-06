@@ -1,7 +1,9 @@
 import express from 'express';
 import { sendSuccessResponse, sendErrorResponse } from '../utils/response.js';
 import { createFullTemplate, lastestTemplates, singleTemplate,
-     giveLike, createComment, getComments, getLikes, removeLike } from '../services/templateService.js';
+     giveLike, createComment, getComments, getLikes,
+      removeLike, updateFullTemplate } from '../services/templateService.js';
+import { deleteTemplate, restrictedTemplates, myTemplates } from '../data/templateRepository.js';
 
 const router = express.Router();
 
@@ -90,5 +92,50 @@ router.get('/:id/likes', async (req, res) => {
         sendErrorResponse(res, error);
     }
 });
+
+router.put('/:id', async (req, res) => {
+  try {
+    const templateId = req.params.id;
+    const templateData = req.body;
+
+    const { updatedTemplate } = await updateFullTemplate(templateId, templateData);
+    sendSuccessResponse(res, 200, 'Template updated successfully', updatedTemplate);
+  } catch (error) {
+    console.error("Update failed:", error); 
+    sendErrorResponse(res, error);
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    const templateId = req.params.id;
+    await deleteTemplate(templateId)
+    sendSuccessResponse(res, 200, 'Template deleted successfully');
+  } catch (error) {
+    sendErrorResponse(res, error);
+  }
+});
+
+router.get('/restricted/:id', async (req, res) => {
+  try{
+    const userId = req.params.id;
+    const templates = await restrictedTemplates(userId);
+    sendSuccessResponse(res, 200, 'Templates fetched successfully', templates); 
+  } catch (error) {
+    sendErrorResponse(res, error);
+  }
+});
+
+router.get('/mine/:id', async (req, res) => {
+  try {
+    const userId = req.params.id;
+    console.log(userId)
+    const templates = await myTemplates(userId);
+    sendSuccessResponse(res, 200, 'Templates fetched successfully', templates);
+  } catch (error) {
+    sendErrorResponse(res, error);
+  }
+});
+
 
 export default router;

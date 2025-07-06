@@ -52,3 +52,12 @@ export const validateComment = (comment) => {
     }
     return comment;
 }
+
+export const validateFormData = (formData) => {
+  const { templateId, fillerUserId, answers } = formData;
+  if (!templateId || !answers || !Array.isArray(answers)) {
+     throw new ValidationError('Invalid form data.');
+  }
+  return { templateId, fillerUserId, answers };
+};
+
