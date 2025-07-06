@@ -5,7 +5,7 @@ import { CSS } from '@dnd-kit/utilities';
 
 const { Option } = Select;
 
-const QUESTION_TYPES = {
+export const QUESTION_TYPES = {
     SINGLE_LINE_STRING: "Single Line Text",
     MULTI_LINE_TEXT: "Multi Line Text",
     NON_NEGATIVE_INTEGER: "Non-Negative Integer",

@@ -7,9 +7,10 @@ import TemplateCreatorPage from './features/Template-Creator/pages/TemplateCreat
 import { Layout, Spin } from 'antd'; 
 import { QueryProvider } from './lib/queryClient';
 import AppLayout from './components/layout/AppLayout';
+import TemplatePreview from './features/Home/components/PreviewTemplate';
 
 const AppContent = () => {
-    const { isLoading, isAuthenticated } = useAuth(); 
+    const { isLoading } = useAuth(); 
 
     if (isLoading) {
         return (
@@ -27,6 +28,7 @@ const AppContent = () => {
                      <Route path="/" element={<AppLayout />}>
                          <Route index element={<HomePage />}/>
                          <Route path="template-creator" element={<TemplateCreatorPage />} />
+                         <Route path="template-preview/:id" element={<TemplatePreview />}/>
                     </Route>
                 </Routes>
         </Router>
