@@ -4,9 +4,9 @@ export const JWTConfig = {
     jwtAccessSecret: process.env.JWT_ACCESS_SECRET,
     jwtRefreshSecret: process.env.JWT_REFRESH_SECRET,
 
-    cookieDomain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
+    cookieDomain: process.env.NODE_ENV === 'production' ? 'templator-eta.vercel.app' : undefined,
     cookieSecure: true, 
-    cookieSameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', 
+    cookieSameSite:'None', 
     accessTokenExpiresInSeconds: parseDurationToSeconds('15m'),
     refreshTokenExpiresInSeconds: parseDurationToSeconds('7d'),
 }
