@@ -23,6 +23,20 @@ app.get('/', (req, res) => {
   res.send('Hello world!, Templator!');
 });
 
+app.get('/cookie-test', (req, res) => {
+  res.cookie(
+    'test_cookie', 
+    'test_value', 
+    {
+      domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
+      secure: true,
+      sameSite: 'None',
+      httpOnly: true
+    }
+  );
+  res.json({ success: true });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/topics', topicRoutes);
 app.use('/api/tags', tagRoutes);
