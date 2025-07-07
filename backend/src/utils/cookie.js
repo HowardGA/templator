@@ -7,7 +7,6 @@ export const cookieCreator = (type, token, res) => {
         secure: JWTConfig.cookieSecure,
         sameSite: JWTConfig.cookieSameSite,
         expires: new Date(Date.now() + expiresInSeconds * 1000), 
-        domain: JWTConfig.cookieDomain
     });
 };
 
@@ -16,7 +15,6 @@ export const cookieClearer = (type, res) => {
         httpOnly: true,
         secure: JWTConfig.cookieSecure,
         sameSite: JWTConfig.cookieSameSite,
-        domain: JWTConfig.cookieDomain
     });
 };
 
