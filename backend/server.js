@@ -11,6 +11,7 @@ import userRoutes from './src/routes/userRoutes.js';
 import templateRoutes from './src/routes/templateRoute.js';
 import imageRoutes from './src/routes/imageRoutes.js';
 import formRoutes from './src/routes/formRoutes.js';
+import saleforceRoutes from './src/routes/salesforceRoutes.js';
 
 const app = express();
 const port = process.env.PORT || 3000; 
@@ -44,6 +45,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/template', templateRoutes);
 app.use('/api/image', imageRoutes);
 app.use('/api/form', formRoutes);
+app.use('/api/salesforce', saleforceRoutes);
 
 
 app.listen(port, () => {

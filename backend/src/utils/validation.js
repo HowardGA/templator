@@ -61,3 +61,36 @@ export const validateFormData = (formData) => {
   return { templateId, fillerUserId, answers };
 };
 
+export const validateAccountData = (accountData) => {
+    checkRequiredFields(accountData, ['name', 'industry']);
+}
+
+export const validateContactData = (contactData) => {
+    checkRequiredFields(contactData, [
+        'firstName',
+        'lastName',
+        'email',
+        'jobTitle',
+        'phoneNumber',
+        'specificInterests',
+    ]);
+};
+
+
+export const createContactPayload = (userStats, contactFormData, salesforceAccountId, userID) => {
+    checkRequiredFields(contactFormData, ['firstName', 'lastName', 'email', 'jobTitle', 'phoneNumber', 'specificInterests']);
+    return {
+        FirstName: contactFormData.firstName,
+        LastName: contactFormData.lastName,
+        Email: contactFormData.email,
+        Title: contactFormData.jobTitle, 
+        Phone: contactFormData.phoneNumber, 
+        AccountId: salesforceAccountId, 
+        External_System_ID__c: userID, 
+        Num_Templates_Created__c: userStats.numTemplatesCreated,
+        Avg_Submissions_Per_Day__c: userStats.avgSubmissionsPerDay,
+        Top_3_topics__c: userStats.top3Topics, 
+        Most_Common_Tags__c: userStats.mostCommonTags,
+        Template_Interests__c: contactFormData.templateInterests,
+    };
+};
