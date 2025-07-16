@@ -4,6 +4,7 @@ import { ImInsertTemplate } from "react-icons/im";
 import { useAuth } from '../../../contexts/AuthContext';
 import MyTemplates from "../components/MyTemplates";
 import MyForms from "../components/MyForms";
+import UserProfile from "../components/UserProfile";
 
 const { TabPane } = Tabs;
 
@@ -17,7 +18,7 @@ const ProfileTabs = () => {
             centered
         >
             <TabPane tab="User Data" key="userData"  icon={<FaUser/>}>
-               
+               <UserProfile userId={user.id}/>
             </TabPane>
 
             <TabPane tab="Templates By User" key="templatesByUser" icon={<ImInsertTemplate/>}>

@@ -38,3 +38,9 @@ export const fetchUsersEmailAndName = async () => {
         }
     });
 };
+
+export const findById = async (id) => {
+    return prisma.user.findUnique({
+        where: { id },
+    });
+};
