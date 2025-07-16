@@ -1,6 +1,7 @@
 import { syncData, getUserData, getSalesforceContactStatus } from "../services/saleforceServices";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAntdApi } from "../../../contexts/MessageContext";
+import { queryClient } from "../../../lib/queryClient";
 
 
 export const useSyncData = () => {
@@ -8,6 +9,7 @@ export const useSyncData = () => {
     return useMutation({
         mutationFn: (userData) => syncData(userData), 
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['salesforceContactStatus'] });
             messageApi.success('Data synced successfully');
         },
         onError: (error) => {
