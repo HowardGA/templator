@@ -1,4 +1,4 @@
-import { getUserWithEmailAndName, myForms, myTemplates, sharedWithMe, singleForm } from "../services/userService";
+import { getUserWithEmailAndName, myForms, myTemplates, sharedWithMe, singleForm, getOdooToken } from "../services/userService";
 import {useQuery} from '@tanstack/react-query';
 
 export const useGetUserEmailAndName = () => {
@@ -53,5 +53,16 @@ export const useGetSingleForm = (formId) => {
     cacheTime: 24 * 60 * 60 * 1000, 
     retry: 1, 
     refetchOnWindowFocus: false, 
+  })
+}
+
+export const useGetOdooToken = () => {
+  return useQuery({
+    queryKey: ['odooToken'],
+    queryFn: getOdooToken,
+    staleTime: 60 * 60 * 1000,
+    cacheTime: 24 * 60 * 60 * 1000,
+    retry: 1,
+    refetchOnWindowFocus: false,
   })
 }

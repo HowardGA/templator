@@ -20,3 +20,8 @@ export const myForms = async (userId) => {
 export const singleForm = async (formId) => {
     return await apiClient.get(`/form/single/${formId}`)
 }
+
+export const getOdooToken = async () => {
+    console.log('Fetching Odoo token');
+    return await apiClient.get('/odoo/user/access-token');
+}

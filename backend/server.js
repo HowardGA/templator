@@ -12,6 +12,7 @@ import templateRoutes from './src/routes/templateRoute.js';
 import imageRoutes from './src/routes/imageRoutes.js';
 import formRoutes from './src/routes/formRoutes.js';
 import saleforceRoutes from './src/routes/salesforceRoutes.js';
+import odooRoutes from './src/routes/odooRoutes.js';
 
 const app = express();
 const port = process.env.PORT || 3000; 
@@ -46,7 +47,7 @@ app.use('/api/template', templateRoutes);
 app.use('/api/image', imageRoutes);
 app.use('/api/form', formRoutes);
 app.use('/api/salesforce', saleforceRoutes);
-
+app.use('/api/odoo', odooRoutes);
 
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);

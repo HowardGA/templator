@@ -2,7 +2,9 @@ import {Layout, Button, Spin, Card, Descriptions, Typography, Space} from "antd"
 import { useState } from "react";
 import { useSyncData, useGetUserInfo, useGetSalesforceContactStatus } from "../../Template-Creator/hooks/saleforceHooks";
 import SaleForceModal from "./SaleForceModal";
-import { FaSync, FaEnvelope, FaUserCircle, FaExclamationCircle, FaCheckCircle } from "react-icons/fa";
+import { FaSync, FaEnvelope, FaUserCircle, FaExclamationCircle, FaCheckCircle, FaKey } from "react-icons/fa";
+import { useGetOdooToken } from "../hooks/userHooks";
+import OdooTokenModal from "./OdooTokenModal";
 const { Title, Text } = Typography;
 
 const UserProfile = ({userId}) => {
@@ -15,10 +17,16 @@ const UserProfile = ({userId}) => {
     } = useGetSalesforceContactStatus();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const {mutate: syncData, isPending} = useSyncData();
+    const {data: odooToken, isLoading: isLoadingOdooToken} = useGetOdooToken();
+    const [isTokenVisible, setIsTokenVisible] = useState(false);
 
     const handleModalSubmit = (saleForceData) => {
         syncData(saleForceData);
         setIsModalOpen(false);
+    }
+
+    const showOdooToken = () => {
+        setIsTokenVisible(true);
     }
 
     const toggleModal = () => {
@@ -85,6 +93,14 @@ const UserProfile = ({userId}) => {
                 >
                     {buttonText}
                 </Button>
+                <Button
+                    onClick={showOdooToken}
+                    icon={<FaKey />}
+                    loading={isLoadingOdooToken} 
+                    type="primary"
+                >
+                    Get Odoo Token
+                </Button>
             </div>
              <Card title={<Title level={4}>User Profile</Title>} style={{ marginBottom: '24px' }}>
                 <Descriptions bordered column={1} size="small">
@@ -112,6 +128,13 @@ const UserProfile = ({userId}) => {
                 onSubmit={handleModalSubmit}
                 initialFormData={initialFormContactData}
             />
+            {isTokenVisible && (
+                <OdooTokenModal
+                    isModalOpen={isTokenVisible}
+                    odooToken={odooToken?.data || ''}
+                    onCancel={() => setIsTokenVisible(false)}
+                />
+            )}
         </Layout>
     );
 };
