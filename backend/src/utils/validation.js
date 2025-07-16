@@ -62,7 +62,7 @@ export const validateFormData = (formData) => {
 };
 
 export const validateAccountData = (accountData) => {
-    checkRequiredFields(accountData, ['name', 'industry']);
+    checkRequiredFields(accountData, ['Name', 'Industry']);
 }
 
 export const validateContactData = (contactData) => {

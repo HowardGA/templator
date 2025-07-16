@@ -55,8 +55,8 @@ const UserProfile = ({userId}) => {
             ? salesforceContactData.Top_3_topics__c.split(';')
             : [], 
         isCompany: !!salesforceContactData?.AccountId && salesforceContactData.AccountId !== import.meta.env.VITE_GENERIC_ACCOUNT_ID_FRONTEND, 
-        companyName: salesforceContactData?.Account?.Name || '',
-        industry: salesforceContactData?.Account?.Industry || '',
+        companyName: salesforceContactData?.Account?.name || '',
+        industry: salesforceContactData?.Account?.industry || '',
     };
 
     const isContactRegistered = salesforceContactStatus?.data.isContactRegistered;
